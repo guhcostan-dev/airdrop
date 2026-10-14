@@ -1,0 +1,47 @@
+{
+  "name": "react-native-airdrop-cli",
+  "version": "0.1.0",
+  "description": "CLI for react-native-airdrop: bundle, sign and publish over-the-air updates.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "airdrop": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@rn-airdrop/core": "workspace:*",
+    "@types/node": "^22.10.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  },
+  "author": "guhcostan",
+  "homepage": "https://github.com/guhcostan-dev/airdrop/tree/main/packages/cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guhcostan-dev/airdrop.git",
+    "directory": "packages/cli"
+  },
+  "keywords": [
+    "react-native",
+    "ota",
+    "codepush",
+    "updates",
+    "cli"
+  ],
+  "bugs": {
+    "url": "https://github.com/guhcostan-dev/airdrop/issues"
+  }
+}

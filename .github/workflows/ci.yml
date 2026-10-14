@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: Android UpdateManager unit tests (JVM)
+        run: |
+          JARS="$RUNNER_TEMP/jars"; CLASSES="$RUNNER_TEMP/classes"
+          mkdir -p "$JARS" "$CLASSES"
+          curl -sSfLo "$JARS/junit.jar" https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar
+          curl -sSfLo "$JARS/hamcrest.jar" https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
+          cd packages/react-native/android
+          javac -d "$CLASSES" -cp "$JARS/junit.jar" src/main/java/com/rnairdrop/UpdateManager.java src/test/java/com/rnairdrop/UpdateManagerTest.java
+          java -cp "$CLASSES:$JARS/junit.jar:$JARS/hamcrest.jar" org.junit.runner.JUnitCore com.rnairdrop.UpdateManagerTest
