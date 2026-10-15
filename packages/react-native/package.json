@@ -1,7 +1,7 @@
 {
   "name": "react-native-airdrop",
-  "version": "0.1.0",
-  "description": "Over-the-air JS/asset updates for React Native, self-hosted on Cloudflare.",
+  "version": "0.2.0",
+  "description": "Over-the-air updates for React Native (bare and Expo): signed releases, staged rollouts, automatic rollback.",
   "license": "MIT",
   "author": "guhcostan",
   "homepage": "https://github.com/guhcostan-dev/airdrop/tree/main/packages/react-native#readme",
@@ -16,6 +16,9 @@
     "codepush",
     "updates",
     "hot-update",
+    "expo",
+    "code-push",
+    "expo-updates-alternative",
     "cloudflare"
   ],
   "main": "lib/index.js",
@@ -29,7 +32,9 @@
     "android/src/main",
     "ios",
     "ReactNativeAirdrop.podspec",
-    "react-native.config.js"
+    "react-native.config.js",
+    "app.plugin.js",
+    "plugin"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -42,11 +47,11 @@
     "react-native": ">=0.71.0"
   },
   "devDependencies": {
-    "@types/react": "^19.2.0",
+    "@types/react": "^19.3.0",
     "react": "19.2.3",
     "react-native": "0.87.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.11"
   },
   "bugs": {
     "url": "https://github.com/guhcostan-dev/airdrop/issues"

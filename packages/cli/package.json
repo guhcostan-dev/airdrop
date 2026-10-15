@@ -1,6 +1,6 @@
 {
   "name": "react-native-airdrop-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI for react-native-airdrop: bundle, sign and publish over-the-air updates.",
   "license": "MIT",
   "type": "module",
@@ -22,10 +22,10 @@
   },
   "devDependencies": {
     "@rn-airdrop/core": "workspace:*",
-    "@types/node": "^22.10.0",
-    "tsup": "^8.5.0",
+    "@types/node": "^22.20.5",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.11"
   },
   "author": "guhcostan",
   "homepage": "https://github.com/guhcostan-dev/airdrop/tree/main/packages/cli#readme",

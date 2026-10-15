@@ -17,7 +17,7 @@ RCT_EXPORT_MODULE(RNAirdrop)
 - (NSDictionary *)constantsToExport {
   return @{
     @"platform" : @"ios",
-    @"sdkVersion" : @"0.1.0",
+    @"sdkVersion" : @"0.2.0",
 #if DEBUG
     @"enabled" : @([[RNAirdropUpdateManager infoString:@"AirdropEnableInDebug"] isEqualToString:@"true"]),
 #else

@@ -23,7 +23,7 @@ import java.io.File;
  */
 public final class Airdrop {
   static final String TAG = "Airdrop";
-  public static final String SDK_VERSION = "0.1.0";
+  public static final String SDK_VERSION = "0.2.0";
   static final String LAUNCH_FILE = "index.android.bundle";
 
   private static UpdateManager instance;

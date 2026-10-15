@@ -43,7 +43,7 @@ airdrop release --platform ios --message "Fix checkout button" --rollout 20
   - **Runtime-version targeting:** JS only reaches binaries with compatible native code; a new store build discards old OTA updates.
 - **Fast.** Content-addressed files: devices download only what changed, gzip-compressed and edge-cached.
 - **Release controls.** Channels, staged rollouts (1-100%), mandatory updates, instant rollback, promote between channels, install/rollback stats.
-- **Works with bare React Native** 0.71 → 0.87+, old and new architecture, Hermes and JSC, iOS and Android. No Expo required.
+- **Works with bare React Native** 0.71 → 0.87+, old and new architecture, Hermes and JSC, iOS and Android. Bare React Native or Expo (config plugin: `plugins: ["react-native-airdrop"]`).
 
 > Native code (Swift/Kotlin, new native modules, permissions) can't be updated over the air on any platform: Apple and Google forbid downloading executable code. Airdrop keeps JS and native in sync with runtime versions instead. [Details →](https://airdrop.guhcostan.dev/docs/how-it-works/#native-changes)
 

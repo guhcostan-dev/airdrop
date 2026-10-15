@@ -13,7 +13,18 @@ export interface AppInfo {
   id: string;
   name: string;
   signingPublicKey: string | null;
+  plan?: string;
   createdAt: string;
+}
+
+export interface UsageInfo {
+  month: string;
+  plan: string;
+  activeDevices: number;
+  activeDevicesLimit: number | null;
+  storageBytes: number;
+  storageBytesLimit: number | null;
+  overLimit: boolean;
 }
 
 export interface UpdateInfo {
@@ -82,7 +93,10 @@ export class Api {
   getApp(appId: string) {
     return this.request<AppInfo>("GET", `/v1/apps/${appId}`);
   }
-  updateApp(appId: string, patch: { name?: string; signingPublicKey?: string | null }) {
+  usage(appId: string) {
+    return this.request<UsageInfo>("GET", `/v1/apps/${appId}/usage`);
+  }
+  updateApp(appId: string, patch: { name?: string; signingPublicKey?: string | null; plan?: string }) {
     return this.request<AppInfo>("PATCH", `/v1/apps/${appId}`, patch);
   }
   missingAssets(appId: string, hashes: string[]) {

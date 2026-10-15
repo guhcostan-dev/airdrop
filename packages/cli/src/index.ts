@@ -19,7 +19,7 @@ import { publishBundle } from "./publish";
 import { generateKeyPair, loadPrivateKey, publicKeyFromPrivate } from "./signing";
 import { c, formatBytes, log, table } from "./ui";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 const HELP = `${c.bold("airdrop")} — over-the-air updates for React Native
 
@@ -30,10 +30,12 @@ Setup
   init [--app <id>] [--sign]             Link your app (or create one) and write airdrop.config.json
   keys generate [--out <file>]           Create a signing key pair and register the public key
   apps list                              List the apps your token can access
+  usage                                  Monthly active devices and storage vs your plan
 
 Operator (full-access token)
   init --name <app name> [--sign]        Create a new app for this project
   apps create <name>                     Create an app (e.g. for a customer)
+  apps plan <appId> <plan>               Set an app's plan (free, pro, scale, enterprise)
   tokens create <name> [--app <id>]      Create an API token; --app scopes it to one app (customers)
   waitlist                               Show early-access signups
 
@@ -210,6 +212,13 @@ async function main(argv: string[]) {
     case "apps": {
       const { values, positionals } = parse(argv.slice(2), {});
       const conn = resolveConnection({ server: str(values, "server"), token: str(values, "token") });
+      if (sub === "plan") {
+        const [appId, plan] = positionals;
+        if (!appId || !plan) throw new Error("usage: airdrop apps plan <appId> <free|pro|scale|enterprise>");
+        const updated = await new Api(conn.serverUrl, conn.token).updateApp(appId, { plan });
+        log.ok(`App "${updated.name}" is now on the ${updated.plan} plan`);
+        return;
+      }
       if (sub === "create") {
         if (!positionals[0]) throw new Error("usage: airdrop apps create <name>");
         const created = await new Api(conn.serverUrl, conn.token).createApp(positionals[0]);
@@ -217,7 +226,7 @@ async function main(argv: string[]) {
         return;
       }
       const apps = await new Api(conn.serverUrl, conn.token).listApps();
-      table(apps.map((a) => ({ id: a.id, name: a.name, signed: a.signingPublicKey ? "yes" : "no", created: a.createdAt })));
+      table(apps.map((a) => ({ id: a.id, name: a.name, plan: a.plan ?? "", signed: a.signingPublicKey ? "yes" : "no", created: a.createdAt })));
       if (!apps.length) log.info("No apps yet. Run `airdrop init`.");
       return;
     }
@@ -293,6 +302,19 @@ async function main(argv: string[]) {
       log.ok(
         `Published update ${c.cyan(update.id)} (${update.rolloutPercentage}% rollout${update.signature ? ", signed" : ""})`,
       );
+      return;
+    }
+
+    case "usage": {
+      const { values } = parse(argv.slice(1), { app: { type: "string" } });
+      const ctx = projectContext(values);
+      const u = await ctx.api.usage(ctx.appId);
+      const pct = (n: number, d: number | null) => (d ? ` (${Math.round((n / d) * 100)}%)` : "");
+      const limit = (d: number | null, f = (x: number) => x.toLocaleString("en-US")) => (d === null ? "unlimited" : f(d));
+      log.info(`${c.bold(u.plan)} plan · ${u.month}`);
+      log.info(`  Monthly active devices  ${u.activeDevices.toLocaleString("en-US")} / ${limit(u.activeDevicesLimit)}${pct(u.activeDevices, u.activeDevicesLimit)}`);
+      log.info(`  Storage                 ${formatBytes(u.storageBytes)} / ${limit(u.storageBytesLimit, formatBytes)}${pct(u.storageBytes, u.storageBytesLimit)}`);
+      if (u.overLimit) log.warn("Over your plan's limit: devices keep working, but new releases are blocked until you upgrade.");
       return;
     }
 
