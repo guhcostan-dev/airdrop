@@ -16,6 +16,9 @@ export interface UserConfig {
 
 export const PROJECT_CONFIG_FILE = "airdrop.config.json";
 
+/** The hosted Airdrop API. Override with --server / AIRDROP_SERVER for another server. */
+export const DEFAULT_SERVER = "https://airdrop-api.guhcostan.dev";
+
 function userConfigPath(): string {
   const base = process.env.XDG_CONFIG_HOME ?? path.join(os.homedir(), ".config");
   return path.join(base, "airdrop", "credentials.json");
@@ -64,16 +67,19 @@ export function normalizeServerUrl(url: string): string {
 
 /**
  * Resolve server + token. Precedence: flags > env (AIRDROP_SERVER/AIRDROP_TOKEN,
- * handy for CI) > project config > stored credentials.
+ * handy for CI) > project config > stored credentials > the hosted DEFAULT_SERVER.
  */
 export function resolveConnection(flags: { server?: string; token?: string }): { serverUrl: string; token: string } {
   const root = findProjectRoot();
   const project = root ? readProjectConfig(root) : null;
   const user = readUserConfig();
-  const serverRaw = flags.server ?? process.env.AIRDROP_SERVER ?? project?.serverUrl ?? user.defaultServer;
-  if (!serverRaw) throw new Error("No server configured. Run `airdrop login --server <url> --token <token>`.");
+  const serverRaw =
+    flags.server ?? process.env.AIRDROP_SERVER ?? project?.serverUrl ?? user.defaultServer ?? DEFAULT_SERVER;
   const serverUrl = normalizeServerUrl(serverRaw);
   const token = flags.token ?? process.env.AIRDROP_TOKEN ?? user.servers[serverUrl]?.token;
-  if (!token) throw new Error(`No token for ${serverUrl}. Run \`airdrop login --server ${serverUrl} --token <token>\`.`);
+  if (!token) {
+    const hint = serverUrl === DEFAULT_SERVER ? "" : ` --server ${serverUrl}`;
+    throw new Error(`No token for ${serverUrl}. Run \`airdrop login${hint} --token <token>\`.`);
+  }
   return { serverUrl, token };
 }

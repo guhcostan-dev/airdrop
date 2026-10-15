@@ -108,7 +108,16 @@ export class Api {
   promoteUpdate(appId: string, id: string, body: { channel: string; rolloutPercentage?: number }) {
     return this.request<UpdateInfo>("POST", `/v1/apps/${appId}/updates/${id}/promote`, body);
   }
-  createToken(name: string) {
-    return this.request<{ id: string; name: string; token: string }>("POST", "/v1/tokens", { name });
+  createToken(name: string, appId?: string) {
+    return this.request<{ id: string; name: string; appId: string | null; token: string }>("POST", "/v1/tokens", {
+      name,
+      appId,
+    });
+  }
+  listWaitlist() {
+    return this.request<{ entries: { email: string; appName: string | null; mau: string | null; createdAt: string }[] }>(
+      "GET",
+      "/v1/waitlist",
+    ).then((r) => r.entries);
   }
 }

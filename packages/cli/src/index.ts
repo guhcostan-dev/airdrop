@@ -5,6 +5,7 @@ import { isPlatform, type Platform } from "@rn-airdrop/core";
 import { Api, ApiError } from "./api";
 import { buildBundle } from "./bundle";
 import {
+  DEFAULT_SERVER,
   findProjectRoot,
   normalizeServerUrl,
   readProjectConfig,
@@ -25,11 +26,16 @@ const HELP = `${c.bold("airdrop")} — over-the-air updates for React Native
 Usage: airdrop <command> [options]
 
 Setup
-  login --server <url> --token <token>   Save credentials for a server
-  init --name <app name> [--sign]        Create an app and write airdrop.config.json
+  login --token <token> [--server <url>] Save credentials (default server: ${DEFAULT_SERVER})
+  init [--app <id>] [--sign]             Link your app (or create one) and write airdrop.config.json
   keys generate [--out <file>]           Create a signing key pair and register the public key
-  tokens create <name>                   Create an API token (e.g. for CI)
-  apps list                              List apps on the server
+  apps list                              List the apps your token can access
+
+Operator (full-access token)
+  init --name <app name> [--sign]        Create a new app for this project
+  apps create <name>                     Create an app (e.g. for a customer)
+  tokens create <name> [--app <id>]      Create an API token; --app scopes it to one app (customers)
+  waitlist                               Show early-access signups
 
 Releasing
   release --platform <ios|android>       Bundle, (sign,) upload and publish an update
@@ -107,10 +113,9 @@ async function main(argv: string[]) {
 
     case "login": {
       const { values } = parse(argv.slice(1), {});
-      const server = str(values, "server");
       const token = str(values, "token");
-      if (!server || !token) throw new Error("usage: airdrop login --server <url> --token <token>");
-      const url = normalizeServerUrl(server);
+      if (!token) throw new Error("usage: airdrop login --token <token> [--server <url>]");
+      const url = normalizeServerUrl(str(values, "server") ?? DEFAULT_SERVER);
       await new Api(url, token).listApps(); // validates the token
       const cfg = readUserConfig();
       cfg.servers[url] = { token };
@@ -123,6 +128,7 @@ async function main(argv: string[]) {
     case "init": {
       const { values } = parse(argv.slice(1), {
         name: { type: "string" },
+        app: { type: "string" },
         sign: { type: "boolean" },
         "key-out": { type: "string" },
       });
@@ -137,7 +143,8 @@ async function main(argv: string[]) {
           name = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8")).name;
         } catch {}
       }
-      if (!name) throw new Error("pass --name <app name>");
+      const linkId = str(values, "app");
+      if (!linkId && !name) throw new Error("pass --app <id> to link your app, or --name <app name> to create one");
       let publicKey: string | undefined;
       if (values.sign) {
         const keyOut = path.resolve(str(values, "key-out") ?? "airdrop-private-key.pem");
@@ -146,9 +153,28 @@ async function main(argv: string[]) {
         publicKey = kp.publicKey;
         log.ok(`Private key written to ${keyOut} — keep it secret, do NOT commit it`);
       }
-      const app = await api.createApp(name, publicKey);
+      const link = async (id: string) => {
+        const found = await api.getApp(id);
+        return publicKey ? api.updateApp(found.id, { signingPublicKey: publicKey }) : found;
+      };
+      let app;
+      let linked = !!linkId;
+      if (linkId) {
+        app = await link(linkId);
+      } else {
+        try {
+          app = await api.createApp(name!, publicKey);
+        } catch (err) {
+          // Customer tokens are scoped to one app and can't create apps: link that app instead.
+          if (!(err instanceof ApiError && err.status === 403)) throw err;
+          const apps = await api.listApps();
+          if (apps.length !== 1) throw new Error("this token can't create apps; pass --app <id>");
+          app = await link(apps[0]!.id);
+          linked = true;
+        }
+      }
       writeProjectConfig(root, { serverUrl: conn.serverUrl, appId: app.id });
-      log.ok(`Created app "${app.name}" (${app.id}) and wrote airdrop.config.json`);
+      log.ok(`${linked ? "Linked" : "Created"} app "${app.name}" (${app.id}) and wrote airdrop.config.json`);
       nativeSnippet(conn.serverUrl, app.id, publicKey);
       return;
     }
@@ -172,20 +198,36 @@ async function main(argv: string[]) {
     }
 
     case "tokens": {
-      if (sub !== "create" || !rest[0]) throw new Error("usage: airdrop tokens create <name>");
-      const { values, positionals } = parse(rest, {});
+      if (sub !== "create" || !rest[0]) throw new Error("usage: airdrop tokens create <name> [--app <id>]");
+      const { values, positionals } = parse(rest, { app: { type: "string" } });
       const conn = resolveConnection({ server: str(values, "server"), token: str(values, "token") });
-      const t = await new Api(conn.serverUrl, conn.token).createToken(positionals[0]!);
-      log.ok(`Token "${t.name}" created. It is shown only once:\n\n  ${t.token}\n`);
+      const t = await new Api(conn.serverUrl, conn.token).createToken(positionals[0]!, str(values, "app"));
+      const scope = t.appId ? ` (scoped to app ${t.appId})` : " (full access)";
+      log.ok(`Token "${t.name}" created${scope}. It is shown only once:\n\n  ${t.token}\n`);
       return;
     }
 
     case "apps": {
-      const { values } = parse(argv.slice(2), {});
+      const { values, positionals } = parse(argv.slice(2), {});
       const conn = resolveConnection({ server: str(values, "server"), token: str(values, "token") });
+      if (sub === "create") {
+        if (!positionals[0]) throw new Error("usage: airdrop apps create <name>");
+        const created = await new Api(conn.serverUrl, conn.token).createApp(positionals[0]);
+        log.ok(`Created app "${created.name}": ${created.id}`);
+        return;
+      }
       const apps = await new Api(conn.serverUrl, conn.token).listApps();
       table(apps.map((a) => ({ id: a.id, name: a.name, signed: a.signingPublicKey ? "yes" : "no", created: a.createdAt })));
       if (!apps.length) log.info("No apps yet. Run `airdrop init`.");
+      return;
+    }
+
+    case "waitlist": {
+      const { values } = parse(argv.slice(1), {});
+      const conn = resolveConnection({ server: str(values, "server"), token: str(values, "token") });
+      const entries = await new Api(conn.serverUrl, conn.token).listWaitlist();
+      table(entries.map((e) => ({ created: e.createdAt.slice(0, 16).replace("T", " "), email: e.email, app: e.appName ?? "", mau: e.mau ?? "" })));
+      if (!entries.length) log.info("No signups yet.");
       return;
     }
 

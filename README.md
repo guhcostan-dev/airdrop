@@ -10,6 +10,7 @@
 **SDK and CLI for Airdrop over-the-air updates.**
 
 Ship JavaScript and asset fixes to production in minutes, without waiting for App Store / Play Store review.
+Airdrop is a hosted service, delivered from Cloudflare's edge: **[request early access](https://airdrop.guhcostan.dev/#access)** to get your app token.
 
 [![npm](https://img.shields.io/npm/v/react-native-airdrop?label=react-native-airdrop)](https://www.npmjs.com/package/react-native-airdrop)
 [![npm](https://img.shields.io/npm/v/react-native-airdrop-cli?label=react-native-airdrop-cli)](https://www.npmjs.com/package/react-native-airdrop-cli)
@@ -35,9 +36,10 @@ airdrop release --platform ios --message "Fix checkout button" --rollout 20
 
 ## Why
 
+- **Pricing that scales.** Free up to 10K monthly active users, then flat monthly plans. [Pricing →](https://airdrop.guhcostan.dev/#pricing)
 - **Safe by default.**
   - **Automatic crash rollback:** an update that crashes before the app renders is rolled back on the next launch and never installed again.
-  - **SHA-256 verification** of every file, plus optional **end-to-end code signing** (ECDSA P-256) with the public key baked into the binary: even a compromised server can't ship code.
+  - **SHA-256 verification** of every file, plus optional **end-to-end code signing** (ECDSA P-256) with the public key baked into the binary: not even Airdrop's servers can ship code to your users.
   - **Runtime-version targeting:** JS only reaches binaries with compatible native code; a new store build discards old OTA updates.
 - **Fast.** Content-addressed files: devices download only what changed, gzip-compressed and edge-cached.
 - **Release controls.** Channels, staged rollouts (1-100%), mandatory updates, instant rollback, promote between channels, install/rollback stats.
@@ -97,8 +99,8 @@ export default withAirdrop(App); // checks on launch, applies on next restart
 
 ```sh
 npm install -g react-native-airdrop-cli
-airdrop login --server https://your-airdrop-server --token <token>
-airdrop init --name "My App" --sign
+airdrop login --token <your-app-token>   # from your early-access email
+airdrop init --sign                      # links your app, generates a signing key
 airdrop release --platform android --private-key airdrop-private-key.pem
 ```
 
