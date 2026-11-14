@@ -1,6 +1,7 @@
 ---
 // Shared shell for the non-landing pages (legal, dashboard).
 import "../styles/landing.css";
+import "../styles/pumpy-airdrop.css";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 
@@ -13,10 +14,11 @@ const { title, description, noindex } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="pt-BR" data-theme="dark" class="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0b0c" />
     <title>{title} · Airdrop</title>
     <meta name="description" content={description} />
     <meta name="color-scheme" content="dark" />
@@ -25,9 +27,9 @@ const { title, description, noindex } = Astro.props;
     <meta property="og:image" content="https://airdrop.guhcostan.dev/og.png" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
-  <body class="min-h-screen">
+  <body class="pumpy-body min-h-screen">
     <SiteHeader />
-    <main class="mx-auto max-w-6xl px-5 pt-14">
+    <main class="mx-auto max-w-6xl px-5 pt-10">
       <slot />
     </main>
     <SiteFooter />

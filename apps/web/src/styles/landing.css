@@ -8,27 +8,27 @@
 @source "../components";
 
 @theme {
-  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --color-brand: #8b6cff;
+  --color-brand: #b8cdbb;
   --color-ok: oklch(0.77 0.15 163);
   --color-bad: oklch(0.7 0.19 22);
 }
 
-/* Basecoat's dark palette, nudged towards near-black with a single violet accent. */
+/* Basecoat's dark palette, aligned with Pumpy's #0b0b0c / #171718 / #b8cdbb palette. */
 .dark {
-  --background: oklch(0.13 0.005 285);
-  --foreground: oklch(0.97 0 0);
-  --card: oklch(0.165 0.006 285);
-  --card-foreground: oklch(0.97 0 0);
-  --muted: oklch(0.21 0.006 285);
-  --muted-foreground: oklch(0.68 0.01 285);
-  --accent: oklch(0.24 0.008 285);
-  --accent-foreground: oklch(0.97 0 0);
-  --border: oklch(1 0 0 / 9%);
-  --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.62 0.2 290);
-  --radius: 0.75rem;
+  --background: #0b0b0c;
+  --foreground: #f3f3f1;
+  --card: #171718;
+  --card-foreground: #f3f3f1;
+  --muted: #202021;
+  --muted-foreground: #959595;
+  --accent: #202021;
+  --accent-foreground: #f3f3f1;
+  --border: #ffffff14;
+  --input: #ffffff20;
+  --ring: #b8cdbb;
+  --radius: 1.25rem;
 }
 
 @layer base {

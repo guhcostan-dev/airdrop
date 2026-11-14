@@ -1,37 +1,38 @@
 ---
-import logo from "../assets/logo.svg?raw";
 import { GITHUB } from "../utils/site";
 ---
 
-<footer class="mt-28 border-t border-white/10 bg-[#060810]">
+<footer class="mt-28 border-t border-white/10" style="background: var(--bg);">
   <div class="mx-auto max-w-6xl px-5 py-12">
     <div class="flex flex-wrap items-center justify-between gap-6">
       <div class="space-y-2">
-        <a href="/" class="flex items-center gap-2.5 font-semibold tracking-tight text-white">
-          <span class="inline-flex size-7 [&>svg]:size-full" set:html={logo} />
-          <span class="text-base font-bold">Airdrop</span>
-          <span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] text-emerald-300">
-            AWS + Cloudflare Edge
-          </span>
+        <a href="/" class="flex items-center gap-2.5 font-semibold tracking-tight" style="color: var(--text);">
+          <svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true">
+            <path
+              d="M22 46 C22 20, 98 20, 98 46 C98 52, 91 55, 84 53 C76 51, 68 51, 60 53 C52 51, 44 51, 36 53 C29 55, 22 52, 22 46 Z"
+              fill="var(--pumpy-body)"
+            />
+            <line x1="33" y1="50" x2="42" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
+            <line x1="87" y1="50" x2="78" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
+            <rect x="26" y="56" width="68" height="50" rx="25" fill="var(--pumpy-body)" />
+            <ellipse cx="47" cy="80" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
+            <ellipse cx="73" cy="80" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
+          </svg>
+          <span class="text-base font-medium">Airdrop®</span>
         </a>
-        <p class="text-xs text-muted-foreground max-w-sm">
-          Zero-trust Over-The-Air (OTA) updates for React Native (0.71 → 0.87+). ECDSA P-256 code signing, deterministic rollouts, and automatic crash rollback.
+        <p class="text-xs max-w-sm" style="color: var(--muted);">
+          Atualizações Over-the-Air Zero-Trust para React Native (0.71 → 0.87+). Assinatura ECDSA P-256, rollout canário e auto-rollback nativo.
         </p>
       </div>
-      <nav class="flex flex-wrap gap-1 text-sm">
-        <a href="/docs/" class="btn" data-variant="ghost" data-size="sm">Docs</a>
-        <a href="/docs/getting-started/" class="btn" data-variant="ghost" data-size="sm">Getting Started</a>
-        <a href="/dashboard/" class="btn" data-variant="ghost" data-size="sm">Dashboard</a>
-        <a href="/docs/security/" class="btn" data-variant="ghost" data-size="sm">Security</a>
-        <a href="/docs/alternatives/" class="btn" data-variant="ghost" data-size="sm">Alternatives</a>
-        <a href="/terms/" class="btn" data-variant="ghost" data-size="sm">Terms</a>
-        <a href="/privacy/" class="btn" data-variant="ghost" data-size="sm">Privacy</a>
-        <a href={GITHUB} class="btn" data-variant="ghost" data-size="sm">GitHub</a>
+      <nav class="flex flex-wrap gap-4 text-xs" style="color: var(--muted-strong);">
+        <a href="/docs/">Docs</a>
+        <a href="/docs/getting-started/">Getting Started</a>
+        <a href="/dashboard/">Console</a>
+        <a href="/docs/security/">Security</a>
+        <a href="/terms/">Terms</a>
+        <a href="/privacy/">Privacy</a>
+        <a href={GITHUB}>GitHub</a>
       </nav>
-    </div>
-    <div class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-muted-foreground">
-      <span>Open-source SDK &amp; CLI (MIT License) · Hosted on AWS CloudFront, S3 &amp; Cloudflare Edge</span>
-      <span class="font-mono text-[11px] text-slate-400">airdrop.guhcostan.dev · airdrop-api.guhcostan.dev</span>
     </div>
   </div>
 </footer>
