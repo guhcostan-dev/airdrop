@@ -21,11 +21,11 @@ jobs:
       AIRDROP_SERVER: ${{ inputs.server }}
       AIRDROP_TOKEN: ${{ secrets.AIRDROP_ADMIN_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ">=22.23.4 <23"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Install example app

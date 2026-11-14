@@ -21,20 +21,30 @@ jobs:
       AWS_REGION: us-east-2
       AIRDROP_ADMIN_TOKEN: ${{ secrets.AIRDROP_ADMIN_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ">=22.23.4 <23"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Check AWS credentials
+        id: aws
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        run: |
+          if [ -n "$AWS_ACCESS_KEY_ID" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::AWS_ACCESS_KEY_ID is not set; skipping AWS deployment."
+          fi
       - name: Configure AWS credentials
-        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+        if: steps.aws.outputs.ok == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
       - name: Deploy Web (S3 + CloudFront) & API (Lambda + S3)
-        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+        if: steps.aws.outputs.ok == 'true'
         run: bash scripts/deploy-aws.sh

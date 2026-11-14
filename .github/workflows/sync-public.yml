@@ -31,11 +31,11 @@ jobs:
     env:
       PUBLIC_REPO_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ">=22.23.4 <23"
       - name: Check token
         id: token
         # Without the secret the public repo is synced by hand (bash scripts/export-public.sh <checkout>).

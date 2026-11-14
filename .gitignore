@@ -1,6 +1,7 @@
 node_modules/
 dist/
 lib/
+!apps/web/src/lib/
 .wrangler/
 .dev.vars
 *.log

@@ -21,11 +21,11 @@ jobs:
     runs-on: [self-hosted, macOS, ARM64]
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ">=22.23.4 <23"
           cache: pnpm
       - uses: actions/setup-java@v4
         with:
@@ -58,11 +58,11 @@ jobs:
     runs-on: [self-hosted, macOS, ARM64]
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ">=22.23.4 <23"
           cache: pnpm
       - uses: actions/setup-java@v4
         with:
@@ -97,7 +97,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           # device-e2e.sh builds the release APK for the emulator's ABI (-PreactNativeArchitectures=arm64-v8a here).
           script: bash e2e/device-e2e.sh android
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: maestro-android
@@ -110,15 +110,15 @@ jobs:
     runs-on: [self-hosted, macOS, ARM64]
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Check Xcode + CocoaPods
         run: |
           xcodebuild -version || { echo "::error::Xcode is not installed on this runner"; exit 1; }
           pod --version || { echo "::error::CocoaPods is not installed on this runner (brew install cocoapods)"; exit 1; }
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ">=22.23.4 <23"
           cache: pnpm
       - uses: actions/setup-java@v4
         with:
@@ -143,7 +143,7 @@ jobs:
       - name: Shut down simulator
         if: always()
         run: '[ -z "${SIM_UDID:-}" ] || xcrun simctl shutdown "$SIM_UDID" || true'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: maestro-ios
