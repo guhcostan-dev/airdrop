@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">AirdropExample</string>
+    <!-- react-native-airdrop: 10.0.2.2 is the host machine as seen from the Android emulator. -->
+    <string name="airdrop_server_url" translatable="false">http://10.0.2.2:8787</string>
+    <string name="airdrop_app_id" translatable="false">REPLACE_WITH_APP_ID</string>
+    <string name="airdrop_public_key" translatable="false"></string>
+</resources>

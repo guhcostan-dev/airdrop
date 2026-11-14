@@ -1,0 +1,13 @@
+/* Docs (Starlight) share the landing's type and accent: Geist, self-hosted via Fontsource. */
+:root {
+  --sl-font: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sl-font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sl-color-accent-low: #1e1a3d;
+  --sl-color-accent: #7c5cff;
+  --sl-color-accent-high: #c9bfff;
+}
+:root[data-theme="light"] {
+  --sl-color-accent-low: #e6e0ff;
+  --sl-color-accent: #5b3df5;
+  --sl-color-accent-high: #2a1a8a;
+}

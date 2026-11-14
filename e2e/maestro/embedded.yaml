@@ -1,0 +1,10 @@
+# Fresh install: the bundle embedded in the binary is running.
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+    stopApp: true
+- extendedWaitUntil:
+    visible: "release: embedded"
+    timeout: 60000
+- assertVisible: "embedded"

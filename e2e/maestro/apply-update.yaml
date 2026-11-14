@@ -1,0 +1,22 @@
+# Download the latest update, cold-restart, and expect it to be running.
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Check for update"
+    timeout: 60000
+- tapOn: "Check for update"
+- extendedWaitUntil:
+    visible: "installed"
+    timeout: 60000
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "release: ${LABEL}"
+    timeout: 60000
+# The new bundle confirms itself; a further check finds nothing new.
+- tapOn: "Check for update"
+- extendedWaitUntil:
+    visible: "upToDate"
+    timeout: 30000

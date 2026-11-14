@@ -1,0 +1,35 @@
+---
+// Shared shell for the non-landing pages (legal, dashboard).
+import "../styles/landing.css";
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+}
+const { title, description, noindex } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} · Airdrop</title>
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="dark" />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:title" content={`${title} · Airdrop`} />
+    <meta property="og:image" content="https://airdrop.guhcostan.dev/og.png" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="min-h-screen">
+    <SiteHeader />
+    <main class="mx-auto max-w-6xl px-5 pt-14">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

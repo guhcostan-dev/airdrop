@@ -1,0 +1,69 @@
+name: Release packages
+
+# Publishes react-native-airdrop and react-native-airdrop-cli to npm.
+# Trigger: push a tag like v0.1.0 or run it manually (publishes the versions in package.json).
+# Requires the NPM_TOKEN repository secret: a *granular* npm access token with
+# read/write on both packages and "Bypass two-factor authentication" enabled.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write # tags the released commit
+
+jobs:
+  publish:
+    runs-on: [self-hosted, macOS, ARM64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - name: Check NPM_TOKEN
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: test -n "$NPM_TOKEN" || { echo "::error::The NPM_TOKEN repository secret is empty or missing (Settings → Secrets and variables → Actions)"; exit 1; }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      # npm shows the public library README (the same one as github.com/guhcostan-dev/airdrop).
+      - run: cp public-repo/README.md packages/react-native/README.md
+      - name: Publish SDK
+        working-directory: packages/react-native
+        # Idempotent: re-running a release (e.g. to create the tag) skips versions already on npm.
+        run: |
+          NAME=$(node -p 'require("./package.json").name'); VERSION=$(node -p 'require("./package.json").version')
+          if [ "$(npm view "$NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+            echo "$NAME@$VERSION is already on npm"
+          else
+            pnpm publish --access public --no-git-checks
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish CLI
+        working-directory: packages/cli
+        # Idempotent: re-running a release (e.g. to create the tag) skips versions already on npm.
+        run: |
+          NAME=$(node -p 'require("./package.json").name'); VERSION=$(node -p 'require("./package.json").version')
+          if [ "$(npm view "$NAME@$VERSION" version 2>/dev/null)" = "$VERSION" ]; then
+            echo "$NAME@$VERSION is already on npm"
+          else
+            pnpm publish --access public --no-git-checks
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Tag the release
+        run: |
+          TAG="v$(node -p 'require("./packages/react-native/package.json").version')"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "$TAG already exists"
+          else
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              tag -a "$TAG" -m "$TAG" "$GITHUB_SHA"
+            git push origin "$TAG"
+          fi

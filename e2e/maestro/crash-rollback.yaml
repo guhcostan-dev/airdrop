@@ -1,0 +1,30 @@
+# Download an update that throws on startup. Its first launch crashes; the
+# next launch must automatically roll back to ${LABEL}.
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Check for update"
+    timeout: 60000
+- tapOn: "Check for update"
+- extendedWaitUntil:
+    visible: "installed"
+    timeout: 60000
+- stopApp
+# This launch boots the broken bundle and crashes.
+- launchApp:
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 5000
+- stopApp:
+    optional: true
+- launchApp
+- extendedWaitUntil:
+    visible: "release: ${LABEL}"
+    timeout: 60000
+# The device remembers the failure and does not download it again.
+- tapOn: "Check for update"
+- extendedWaitUntil:
+    visible: "upToDate"
+    timeout: 30000

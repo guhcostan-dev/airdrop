@@ -1,11 +1,27 @@
 node_modules/
 dist/
 lib/
+.wrangler/
+.dev.vars
 *.log
 .DS_Store
 coverage/
+.airdrop/
 *.pem
 !**/fixtures/*.pem
+apps/docs/.vitepress/cache
+apps/docs/.vitepress/dist
+# Example app
+examples/*/android/app/build
+examples/*/android/build
+examples/*/android/.gradle
+examples/*/android/local.properties
+examples/*/ios/Pods
+examples/*/ios/build
+examples/*/vendor
 **/android/build/
 **/android/.cxx/
+docs/.vitepress/dist
+docs/.vitepress/cache
 packages/react-native/README.md
+.astro/

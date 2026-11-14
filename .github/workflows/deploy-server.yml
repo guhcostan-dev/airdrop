@@ -1,0 +1,54 @@
+name: Deploy server
+
+# Deploys apps/server to Cloudflare Workers (D1 migrations + worker + ADMIN_TOKEN secret).
+# Secrets: CLOUDFLARE_API_TOKEN (required), AIRDROP_ADMIN_TOKEN (optional; sets the worker's ADMIN_TOKEN).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - apps/server/**
+      - packages/core/**
+
+concurrency:
+  group: deploy-server
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, macOS, ARM64]
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check token
+        run: test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Missing CLOUDFLARE_API_TOKEN secret"; exit 1; }
+      - name: Apply D1 migrations
+        working-directory: apps/server
+        run: npx wrangler d1 migrations apply airdrop --remote
+      - name: Deploy worker
+        working-directory: apps/server
+        run: npx wrangler deploy
+      - name: Set ADMIN_TOKEN
+        working-directory: apps/server
+        env:
+          AIRDROP_ADMIN_TOKEN: ${{ secrets.AIRDROP_ADMIN_TOKEN }}
+        run: |
+          if [ -n "$AIRDROP_ADMIN_TOKEN" ]; then
+            printf '%s' "$AIRDROP_ADMIN_TOKEN" | npx wrangler secret put ADMIN_TOKEN
+          else
+            echo "::warning::AIRDROP_ADMIN_TOKEN secret not set; ADMIN_TOKEN unchanged"
+          fi
+      - name: Smoke test
+        run: |
+          for i in 1 2 3 4 5 6; do
+            curl -fsS https://airdrop-server.guhcostan.workers.dev/health && exit 0
+            sleep 5
+          done
+          exit 1

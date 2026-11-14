@@ -1,0 +1,39 @@
+name: Deploy web (landing + docs)
+
+# Secret: CLOUDFLARE_API_TOKEN
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - apps/web/**
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, macOS, ARM64]
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm web:build
+      - name: Deploy
+        working-directory: apps/web
+        run: npx wrangler deploy
+      - name: Smoke test
+        run: |
+          for i in 1 2 3 4 5 6; do
+            curl -fsS -o /dev/null https://airdrop-web.guhcostan.workers.dev/ && exit 0
+            sleep 5
+          done
+          exit 1

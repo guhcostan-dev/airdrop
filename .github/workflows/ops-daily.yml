@@ -1,0 +1,71 @@
+name: Ops (daily)
+
+# Production smoke test + early-access digest. A failed run is emailed by GitHub; new
+# signups open an issue in this repo (so they reach your GitHub notifications).
+# Secrets: AIRDROP_ADMIN_TOKEN.
+on:
+  schedule:
+    - cron: "7 11 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ops-daily
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  smoke:
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 20
+    env:
+      AIRDROP_SERVER: https://airdrop-api.guhcostan.dev
+      AIRDROP_TOKEN: ${{ secrets.AIRDROP_ADMIN_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install example app
+        working-directory: examples/AirdropExample
+        run: npm ci
+      - name: Production smoke test
+        run: bash e2e/prod-smoke.sh
+
+  waitlist-digest:
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 5
+    steps:
+      - name: Open an issue for new early-access signups (last 24h)
+        env:
+          AIRDROP_TOKEN: ${{ secrets.AIRDROP_ADMIN_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          curl -sf https://airdrop-api.guhcostan.dev/v1/waitlist -H "authorization: Bearer $AIRDROP_TOKEN" > "$RUNNER_TEMP/waitlist.json"
+          python3 - "$RUNNER_TEMP/waitlist.json" > "$RUNNER_TEMP/issue.json" <<'PY'
+          import json, sys, datetime
+          entries = json.load(open(sys.argv[1]))["entries"]
+          since = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=24)
+          new = [e for e in entries if datetime.datetime.fromisoformat(e["createdAt"].replace("Z", "+00:00")) > since]
+          if not new:
+              sys.exit(0)
+          rows = "\n".join(f"| {e['createdAt'][:16].replace('T', ' ')} | {e['email']} | {e['appName'] or ''} | {e['mau'] or ''} |" for e in new)
+          body = (f"{len(new)} new early-access signup(s) in the last 24 hours ({len(entries)} total).\n\n"
+                  "| when (UTC) | email | app | MAU |\n|---|---|---|---|\n" + rows +
+                  "\n\nOnboard with `airdrop apps create <name>` and `airdrop tokens create <name> --app <id>`.")
+          print(json.dumps({"title": f"Early access: {len(new)} new signup(s)", "body": body}))
+          PY
+          if [ -s "$RUNNER_TEMP/issue.json" ]; then
+            curl -sf -X POST "https://api.github.com/repos/$REPO/issues" \
+              -H "authorization: Bearer $GH_TOKEN" -H "accept: application/vnd.github+json" \
+              --data @"$RUNNER_TEMP/issue.json" > /dev/null
+            echo "Opened an issue for new signups"
+          else
+            echo "No new signups"
+          fi

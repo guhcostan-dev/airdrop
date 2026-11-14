@@ -1,0 +1,35 @@
+name: Production smoke test
+
+# Publishes a real signed update to the deployed server and verifies /v1/check + file downloads.
+# Creates one "Prod smoke <timestamp>" app per run. Secret: AIRDROP_ADMIN_TOKEN.
+on:
+  workflow_dispatch:
+    inputs:
+      server:
+        description: Server URL
+        default: https://airdrop-api.guhcostan.dev
+
+concurrency:
+  group: prod-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 20
+    env:
+      AIRDROP_SERVER: ${{ inputs.server }}
+      AIRDROP_TOKEN: ${{ secrets.AIRDROP_ADMIN_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install example app
+        working-directory: examples/AirdropExample
+        run: npm ci
+      - name: Smoke test
+        run: bash e2e/prod-smoke.sh

@@ -1,0 +1,37 @@
+---
+import logo from "../assets/logo.svg?raw";
+import { GITHUB } from "../utils/site";
+---
+
+<footer class="mt-28 border-t border-white/10 bg-[#060810]">
+  <div class="mx-auto max-w-6xl px-5 py-12">
+    <div class="flex flex-wrap items-center justify-between gap-6">
+      <div class="space-y-2">
+        <a href="/" class="flex items-center gap-2.5 font-semibold tracking-tight text-white">
+          <span class="inline-flex size-7 [&>svg]:size-full" set:html={logo} />
+          <span class="text-base font-bold">Airdrop</span>
+          <span class="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[10px] text-emerald-300">
+            AWS + Cloudflare Edge
+          </span>
+        </a>
+        <p class="text-xs text-muted-foreground max-w-sm">
+          Zero-trust Over-The-Air (OTA) updates for React Native (0.71 → 0.87+). ECDSA P-256 code signing, deterministic rollouts, and automatic crash rollback.
+        </p>
+      </div>
+      <nav class="flex flex-wrap gap-1 text-sm">
+        <a href="/docs/" class="btn" data-variant="ghost" data-size="sm">Docs</a>
+        <a href="/docs/getting-started/" class="btn" data-variant="ghost" data-size="sm">Getting Started</a>
+        <a href="/dashboard/" class="btn" data-variant="ghost" data-size="sm">Dashboard</a>
+        <a href="/docs/security/" class="btn" data-variant="ghost" data-size="sm">Security</a>
+        <a href="/docs/alternatives/" class="btn" data-variant="ghost" data-size="sm">Alternatives</a>
+        <a href="/terms/" class="btn" data-variant="ghost" data-size="sm">Terms</a>
+        <a href="/privacy/" class="btn" data-variant="ghost" data-size="sm">Privacy</a>
+        <a href={GITHUB} class="btn" data-variant="ghost" data-size="sm">GitHub</a>
+      </nav>
+    </div>
+    <div class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-muted-foreground">
+      <span>Open-source SDK &amp; CLI (MIT License) · Hosted on AWS CloudFront, S3 &amp; Cloudflare Edge</span>
+      <span class="font-mono text-[11px] text-slate-400">airdrop.guhcostan.dev · airdrop-api.guhcostan.dev</span>
+    </div>
+  </div>
+</footer>

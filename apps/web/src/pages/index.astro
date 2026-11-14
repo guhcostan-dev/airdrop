@@ -1,0 +1,524 @@
+---
+import "../styles/landing.css";
+import GithubIcon from "../components/GithubIcon.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import ReleaseRace from "../components/ReleaseRace.astro";
+import EarlyAccess from "../components/EarlyAccess.astro";
+import { InteractiveOtaPlayground } from "../components/interactive/InteractiveOtaPlayground";
+import { CompetitorMatrix } from "../components/interactive/CompetitorMatrix";
+import { IntegrationCodeTabs } from "../components/interactive/IntegrationCodeTabs";
+import { FaqAccordion } from "../components/interactive/FaqAccordion";
+import { PLANS, formatMau } from "../utils/pricing";
+import {
+  ArrowRight,
+  BadgeCheck,
+  BookOpen,
+  Check,
+  Cloud,
+  Copy,
+  Cpu,
+  EyeOff,
+  KeyRound,
+  Layers,
+  LifeBuoy,
+  Play,
+  Server,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  Timer,
+  Undo2,
+  Workflow,
+  Zap,
+} from "@lucide/astro";
+
+const GITHUB = "https://github.com/guhcostan-dev/airdrop";
+
+const facts = [
+  "Open-source SDK & CLI (MIT)",
+  "iOS & Android",
+  "React Native 0.71 → 0.87+",
+  "Old & New Architecture (Fabric)",
+  "Bare RN & Expo Config Plugin",
+  "AWS + Cloudflare Edge",
+];
+
+const outcomes = [
+  {
+    icon: Timer,
+    title: "Fix in minutes, not store weeks",
+    body: "A JS or asset hotfix reaches every active user on their next launch or resume. Zero App Store / Play Store review bottlenecks.",
+  },
+  {
+    icon: Undo2,
+    title: "Self-healing crash rollback",
+    body: "Every update boots in a 2-phase native guard. If it crashes before notifyAppReady(), the next launch automatically restores the previous bundle.",
+  },
+  {
+    icon: Target,
+    title: "Staged canary rollouts (1–100%)",
+    body: "Release to staging first, then 5% of production, then 100%. Promote the exact same signed bundle across channels with zero rebuild.",
+  },
+];
+
+const features = [
+  {
+    icon: Zap,
+    title: "Hermes bytecode & assets OTA",
+    body: "Compiled Hermes bytecode (.hbc), images, and fonts delivered globally. Apply on next restart, on app resume, or immediately.",
+  },
+  {
+    icon: LifeBuoy,
+    title: "Two-phase native crash guard",
+    body: "Deterministic state machine in Objective-C (RNAirdropUpdateManager) and Java (UpdateManager) blacklists broken releases per device.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "End-to-end ECDSA P-256 signing",
+    body: "Sign bundles in your CLI/CI with your private key. Devices verify against the public key baked into Info.plist and strings.xml.",
+  },
+  {
+    icon: Layers,
+    title: "Content-addressed SHA-256 diffs",
+    body: "Every file is indexed by its uncompressed SHA-256 hash. Devices copy unchanged files locally and download only what changed.",
+  },
+  {
+    icon: Workflow,
+    title: "Channels, rollouts & mandatory flags",
+    body: "Deterministic SHA-256 device bucketing from 1% to 100%, instant server-side rollback, and zero-rebuild channel promotion.",
+  },
+  {
+    icon: Cpu,
+    title: "Runtime-version native safety",
+    body: "Updates are strictly pinned to a runtimeVersion so JavaScript never executes against an incompatible native binary.",
+  },
+];
+
+const ciTools = ["GitHub Actions", "GitLab CI", "Bitrise", "CircleCI", "Codemagic", "EAS Build", "Fastlane", "Jenkins"];
+
+const migration = [
+  ["codePush(App)", "withAirdrop(App)"],
+  ["codePush.sync({ installMode })", "Airdrop.sync({ installMode })"],
+  ["codePush.notifyAppReady()", "Airdrop.notifyAppReady()"],
+  ["InstallMode.ON_NEXT_RESTART", 'installMode: "nextRestart"'],
+  ["Staging / Production deployments", "channels (--channel staging)"],
+  ["appcenter codepush release-react", "airdrop release -p ios --sign"],
+  ["appcenter codepush rollback", "airdrop rollback <updateId>"],
+  ["appcenter codepush promote", "airdrop promote <id> --to production"],
+];
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Airdrop — Zero-Trust Over-The-Air (OTA) Updates for React Native</title>
+    <meta
+      name="description"
+      content="Ship React Native hotfixes in minutes without store review. End-to-end ECDSA P-256 code signing, automatic crash rollback, SHA-256 differential sync, and AWS + Cloudflare Edge delivery. Free up to 10K MAU."
+    />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content="Airdrop — Zero-Trust Over-The-Air Updates for React Native" />
+    <meta
+      property="og:description"
+      content="Ship React Native hotfixes in minutes. ECDSA P-256 signing, automatic crash rollback, staged rollouts, and 95% lower cost than per-MAU platforms."
+    />
+    <meta property="og:image" content="https://airdrop.guhcostan.dev/og.png" />
+    <meta property="og:url" content="https://airdrop.guhcostan.dev/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>document.documentElement.classList.add("js");</script>
+  </head>
+  <body class="min-h-screen bg-[#070911] text-foreground selection:bg-brand/30">
+    <SiteHeader />
+
+    <main>
+      <!-- HERO SECTION -->
+      <section class="relative overflow-hidden pb-12">
+        <div class="hero-grid pointer-events-none absolute inset-0 -z-10" aria-hidden="true"></div>
+        <div
+          class="glow-breathe pointer-events-none absolute -top-48 left-1/2 -z-10 h-[560px] w-[980px] max-w-[100vw] -translate-x-1/2 rounded-full bg-brand/25 blur-[135px]"
+          aria-hidden="true"
+        >
+        </div>
+
+        <div class="mx-auto max-w-6xl px-5 pt-16 pb-6 text-center sm:pt-24">
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            <a
+              href="#migrate"
+              class="badge h-auto max-w-full gap-2 rounded-full border-brand/40 bg-brand/10 px-3.5 py-1.5 text-xs sm:text-sm whitespace-normal hover:border-brand"
+              data-variant="outline"
+            >
+              <span class="size-2 flex-none rounded-full bg-ok shadow-[0_0_10px] shadow-ok"></span>
+              <span>CodePush retired March 2025 · <strong>95% cheaper than EAS Update</strong> · Migrate in 15 min</span>
+              <ArrowRight class="size-3.5 text-brand" />
+            </a>
+          </div>
+
+          <h1 class="mx-auto mt-7 max-w-4xl text-5xl font-bold tracking-tighter text-balance sm:text-7xl leading-[1.04]">
+            Ship React Native hotfixes <span class="text-gradient">in minutes.</span>
+            <span class="block text-muted-foreground font-semibold mt-1">Zero store wait. Zero trust required.</span>
+          </h1>
+
+          <p class="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-pretty text-muted-foreground leading-relaxed">
+            Open-source React Native OTA SDK and CLI powered by <strong class="font-medium text-foreground">AWS &amp; Cloudflare Edge</strong>.
+            End-to-end <strong class="font-medium text-foreground">ECDSA P-256 code signing</strong>, deterministic <strong class="font-medium text-foreground">2-phase crash rollback</strong>, and content-addressed <strong class="font-medium text-foreground">SHA-256 per-file diffs</strong>—for bare React Native and Expo.
+          </p>
+
+          <div class="mt-8 flex flex-wrap justify-center gap-3">
+            <a href="#access" class="btn shadow-[0_0_30px_-5px_rgba(139,108,255,0.65)]" data-size="lg">
+              Get early access <ArrowRight />
+            </a>
+            <a href="/dashboard/" class="btn" data-variant="secondary" data-size="lg">
+              <Play class="size-4 text-cyan-400" /> Live Demo Dashboard
+            </a>
+            <a href="/docs/getting-started/" class="btn" data-variant="outline" data-size="lg">
+              <BookOpen /> Documentation
+            </a>
+          </div>
+
+          <!-- CLI Quick Install Pill -->
+          <div class="mx-auto mt-6 inline-flex max-w-full items-center gap-3 rounded-xl border border-white/15 bg-[#0D1120] py-1.5 pr-2 pl-4 font-mono text-xs sm:text-sm shadow-lg">
+            <span class="truncate">
+              <span class="text-brand">$</span> npm i react-native-airdrop &amp;&amp; npx react-native-airdrop-cli init --sign
+            </span>
+            <button
+              type="button"
+              class="btn"
+              data-variant="ghost"
+              data-size="icon-sm"
+              data-copy="npm install react-native-airdrop && npx react-native-airdrop-cli init --sign"
+              aria-label="Copy install command"
+            >
+              <Copy data-icon="copy" />
+              <Check data-icon="done" class="hidden text-ok" />
+            </button>
+          </div>
+
+          <ul class="mx-auto mt-7 flex max-w-4xl flex-wrap justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-muted-foreground">
+            {
+              facts.map((f) => (
+                <li class="inline-flex items-center gap-1.5">
+                  <Check class="size-3.5 text-cyan-400" />
+                  {f}
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <!-- INTERACTIVE SHADCN + REACT PLAYGROUND -->
+        <div id="playground" class="scroll-mt-20">
+          <InteractiveOtaPlayground client:load />
+        </div>
+      </section>
+
+      <!-- HERO VISUAL SHOWCASE + CI PIPELINE -->
+      <section class="mx-auto max-w-6xl px-5 pt-16">
+        <div class="grid gap-8 lg:grid-cols-[1.15fr_1fr] items-center rounded-3xl border border-white/10 bg-[#0B0E1A]/80 p-6 sm:p-10">
+          <div class="space-y-4">
+            <p class="eyebrow">Global Edge + AWS S3 &amp; CloudFront</p>
+            <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              Engineered for instant edge delivery and full infrastructure sovereignty.
+            </h2>
+            <p class="text-sm sm:text-base text-muted-foreground leading-relaxed">
+              Use our managed multi-region edge cloud (<code class="font-mono text-cyan-300">airdrop-api.guhcostan.dev</code>) or self-host the entire stack on your own <strong>AWS (S3 + CloudFront + Lambda/EC2)</strong> or <strong>Cloudflare (Workers + D1 + R2)</strong> account. One CLI works identically across every CI runner.
+            </p>
+            <div class="flex flex-wrap gap-2 pt-2">
+              {ciTools.map((t) => <span class="badge h-7 px-3 text-xs border-white/10 bg-white/[0.04]" data-variant="secondary">{t}</span>)}
+            </div>
+          </div>
+          <div class="overflow-hidden rounded-2xl border border-white/15 bg-[#060810] shadow-2xl">
+            <img
+              src="/brand/hero-orbital-drop.png"
+              alt="Airdrop Orbital Capsule delivering verified OTA bundles to iOS and Android devices"
+              width="1280"
+              height="720"
+              loading="eager"
+              class="w-full h-auto object-cover"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- STORE RELEASE VS AIRDROP RACE -->
+      <section class="mx-auto max-w-6xl px-5 pt-28">
+        <p class="eyebrow">Speed to Production</p>
+        <h2 class="section-title mt-3 max-w-3xl">Your fix is live before App Store review even opens your build.</h2>
+        <p class="mt-4 max-w-2xl text-muted-foreground">
+          A store release waits on CI queues, human review, and phased store adoption. An Airdrop OTA release reaches 100% of active devices on their very next launch.
+        </p>
+        <div class="mt-10"><ReleaseRace /></div>
+      </section>
+
+      <!-- OUTCOMES -->
+      <section class="mx-auto max-w-6xl px-5 pt-24">
+        <p class="eyebrow">Built for the 2 a.m. incident</p>
+        <h2 class="section-title mt-3 max-w-3xl">Ship with confidence, revert in one command.</h2>
+        <div class="mt-10 grid gap-4 lg:grid-cols-3">
+          {
+            outcomes.map(({ icon: Icon, title, body }) => (
+              <div class="flex gap-4 rounded-2xl border border-white/10 bg-[#0B0E1A]/90 p-6">
+                <span class="inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-brand/30 bg-brand/10 text-brand">
+                  <Icon class="size-5" />
+                </span>
+                <div>
+                  <h3 class="font-semibold text-white">{title}</h3>
+                  <p class="mt-1.5 text-sm text-muted-foreground leading-relaxed">{body}</p>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- FEATURES + ARCHITECTURE DIAGRAM -->
+      <section id="features" class="mx-auto max-w-6xl scroll-mt-20 px-5 pt-28">
+        <p class="eyebrow">Architecture &amp; Capabilities</p>
+        <h2 class="section-title mt-3 max-w-3xl">Everything CodePush did. Plus the security &amp; diffing it lacked.</h2>
+        <p class="mt-3 max-w-2xl text-muted-foreground">
+          Designed from first principles for modern React Native (0.71 to 0.87+, Hermes bytecode, Fabric &amp; TurboModules).
+        </p>
+
+        <div class="mt-8 overflow-hidden rounded-2xl border border-white/12 bg-[#090C16] p-2 sm:p-4 shadow-2xl">
+          <img
+            src="/brand/architecture.svg"
+            alt="Airdrop Zero-Trust End-to-End Signed OTA Architecture Diagram"
+            width="1120"
+            height="420"
+            loading="lazy"
+            class="w-full h-auto rounded-xl"
+          />
+        </div>
+
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {
+            features.map(({ icon: Icon, title, body }) => (
+              <article class="card border-white/10 bg-[#0B0E1A]/90 transition-colors hover:border-brand/50">
+                <header>
+                  <span class="mb-3 inline-flex size-10 items-center justify-center rounded-xl border border-brand/30 bg-brand/10 text-brand">
+                    <Icon size={18} />
+                  </span>
+                  <h3 class="text-white font-semibold">{title}</h3>
+                  <p class="text-sm text-muted-foreground leading-relaxed">{body}</p>
+                </header>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- INTERACTIVE INTEGRATION CODE TABS (EXPO / BARE RN / HOOKS / CI) -->
+      <section id="how" class="mx-auto max-w-6xl scroll-mt-20 px-5 pt-28">
+        <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p class="eyebrow">Developer Experience</p>
+            <h2 class="section-title mt-3">Integrate in 5 minutes. Bare React Native or Expo.</h2>
+            <p class="mt-2 max-w-2xl text-muted-foreground">
+              Use the zero-config Expo plugin or drop two lines into <code class="kbd">AppDelegate.swift</code> and <code class="kbd">MainApplication.kt</code>.
+            </p>
+          </div>
+          <a href="/docs/getting-started/" class="btn" data-variant="outline" data-size="sm">
+            Full Getting Started Guide <ArrowRight />
+          </a>
+        </div>
+        <IntegrationCodeTabs client:visible />
+      </section>
+
+      <!-- COMPETITOR BENCHMARK MATRIX & SCALE CALCULATOR -->
+      <section id="compare" class="mx-auto max-w-6xl scroll-mt-20 px-5 pt-28">
+        <p class="eyebrow">Competitor Benchmarks &amp; ROI</p>
+        <h2 class="section-title mt-3 max-w-3xl">Why teams switch from EAS Update, Stallion, Revopush &amp; CodePush.</h2>
+        <p class="mt-3 max-w-2xl text-muted-foreground">
+          Most OTA providers penalize your growth with steep per-MAU tiers and metered CDN bandwidth. Airdrop gives you predictable flat pricing—or 100% self-hosted freedom on your own AWS / Cloudflare account.
+        </p>
+        <div class="mt-10">
+          <CompetitorMatrix client:visible />
+        </div>
+      </section>
+
+      <!-- PRICING PLANS -->
+      <section id="pricing" class="mx-auto max-w-6xl scroll-mt-20 px-5 pt-28">
+        <p class="eyebrow">Transparent Pricing</p>
+        <h2 class="section-title mt-3 max-w-3xl">Flat monthly plans. $0 bandwidth overages.</h2>
+        <p class="mt-4 max-w-2xl text-muted-foreground">
+          Every plan includes unlimited releases, ECDSA P-256 code signing, automatic crash rollback, staged rollouts, and iOS + Android support.
+        </p>
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {
+            PLANS.map((p) => (
+              <div class:list={["card border-white/10 bg-[#0B0E1A]/90", p.id === "pro" && "ring-2 ring-brand/70 shadow-[0_0_35px_-10px_rgba(139,108,255,0.45)]"]}>
+                <header>
+                  <h3 class="flex items-center justify-between gap-2 text-white">
+                    <span>{p.name}</span>
+                    {p.id === "pro" && <span class="badge border-brand/40 bg-brand/20 text-[#C4B5FD]" data-variant="outline">Most Popular</span>}
+                  </h3>
+                  <p>{p.blurb}</p>
+                </header>
+                <section>
+                  <p class="text-4xl font-bold tracking-tight text-white font-mono">
+                    {p.usd === null ? "Custom" : p.usd === 0 ? "$0" : `$${p.usd}`}
+                    {p.usd !== null && <span class="text-sm font-sans font-normal text-muted-foreground">/mo</span>}
+                  </p>
+                  <p class="mt-2 text-sm text-muted-foreground">
+                    {p.mau === null ? "Over 1M monthly active users" : `Up to ${formatMau(p.mau)} monthly active users`}
+                  </p>
+                </section>
+                <footer>
+                  <a href="#access" class="btn w-full" data-variant={p.id === "pro" ? undefined : "outline"}>
+                    {p.usd === null ? "Talk to engineering" : "Start free"}
+                  </a>
+                </footer>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- ZERO-TRUST SECURITY SECTION WITH AI VISUAL -->
+      <section id="security" class="mx-auto max-w-6xl scroll-mt-20 px-5 pt-28">
+        <div class="grid gap-10 lg:grid-cols-[1.05fr_1fr] items-center">
+          <div>
+            <p class="eyebrow">Zero-Trust Cryptographic Security</p>
+            <h2 class="section-title mt-3">Even a compromised server cannot ship code to your users.</h2>
+            <p class="mt-4 text-muted-foreground leading-relaxed">
+              Hosted shouldn't mean blindly trusted. With Airdrop's end-to-end code signing, your ECDSA P-256 private key stays in your CI or hardware enclave. Devices verify the canonical manifest signature against the public key compiled inside your app binary.
+            </p>
+            <div class="mt-6 grid gap-4">
+              <div class="flex gap-3.5 rounded-xl border border-white/10 bg-[#0B0E1A]/90 p-4">
+                <KeyRound class="mt-0.5 size-5 shrink-0 text-brand" />
+                <div>
+                  <h3 class="font-semibold text-white text-sm">Signed locally in CLI / CI (ECDSA P-256)</h3>
+                  <p class="mt-1 text-xs text-muted-foreground">
+                    Verified natively via Apple Security.framework (<code class="font-mono">SecKeyVerifySignature</code>) and Android JCA (<code class="font-mono">SHA256withECDSA</code>).
+                  </p>
+                </div>
+              </div>
+              <div class="flex gap-3.5 rounded-xl border border-white/10 bg-[#0B0E1A]/90 p-4">
+                <BadgeCheck class="mt-0.5 size-5 shrink-0 text-cyan-400" />
+                <div>
+                  <h3 class="font-semibold text-white text-sm">Dual SHA-256 content verification</h3>
+                  <p class="mt-1 text-xs text-muted-foreground">
+                    The server decompresses and verifies the SHA-256 of every uploaded file before writing to S3/R2; the device verifies every byte again before staging.
+                  </p>
+                </div>
+              </div>
+              <div class="flex gap-3.5 rounded-xl border border-white/10 bg-[#0B0E1A]/90 p-4">
+                <EyeOff class="mt-0.5 size-5 shrink-0 text-emerald-400" />
+                <div>
+                  <h3 class="font-semibold text-white text-sm">Privacy-first device telemetry</h3>
+                  <p class="mt-1 text-xs text-muted-foreground">
+                    No PII, emails, or device fingerprinting. Rollout bucketing uses an ephemeral installation UUID and truncated monthly hashes.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <a href="/docs/security/" class="btn mt-5 px-0" data-variant="link">Read the full security &amp; threat model <ArrowRight /></a>
+          </div>
+
+          <div class="overflow-hidden rounded-3xl border border-white/15 bg-[#060810] shadow-2xl">
+            <img
+              src="/brand/security-enclave.png"
+              alt="Airdrop Zero-Trust Cryptographic Enclave and Auto-Rollback Shield"
+              width="1280"
+              height="720"
+              loading="lazy"
+              class="w-full h-auto object-cover"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- MIGRATE FROM CODEPUSH -->
+      <section id="migrate" class="mx-auto grid max-w-6xl scroll-mt-20 gap-10 px-5 pt-28 lg:grid-cols-[1fr_1.25fr] items-center">
+        <div>
+          <p class="eyebrow">Coming from Microsoft CodePush</p>
+          <h2 class="section-title mt-3">Same mental model. Modern architecture.</h2>
+          <p class="mt-4 text-muted-foreground leading-relaxed">
+            Visual Studio App Center shut down on March 31, 2025 and archived <code class="kbd">react-native-code-push</code>. Move to Airdrop in one afternoon—every API call and CLI command maps 1-to-1.
+          </p>
+          <a href="/docs/getting-started/" class="btn mt-6 px-0" data-variant="link">Read the migration walkthrough <ArrowRight /></a>
+        </div>
+        <div class="min-w-0 overflow-x-auto rounded-2xl border border-white/12 bg-[#0B0E1A]/90">
+          <table class="table min-w-[480px] font-mono text-[13px]">
+            <thead>
+              <tr class="bg-[#070911]">
+                <th class="pl-5 font-sans text-muted-foreground">Legacy CodePush</th>
+                <th class="font-sans text-cyan-300">Airdrop (v0.2)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                migration.map(([from, to]) => (
+                  <tr>
+                    <td class="py-3 pl-5 text-muted-foreground line-through opacity-75">{from}</td>
+                    <td class="py-3 text-emerald-300 font-medium">{to}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- FAQ (SHADCN RADIX ACCORDION) -->
+      <section id="faq" class="mx-auto max-w-4xl scroll-mt-20 px-5 pt-28">
+        <p class="eyebrow text-center">FAQ</p>
+        <h2 class="section-title mt-3 text-center">Questions engineering teams ask first</h2>
+        <div class="mt-10">
+          <FaqAccordion client:visible />
+        </div>
+      </section>
+
+      <!-- EARLY ACCESS CTA -->
+      <section id="access" class="mx-auto max-w-6xl scroll-mt-20 px-5 pt-28">
+        <div class="relative overflow-hidden rounded-3xl border border-white/15 bg-[#0B0E1A] px-6 py-12 sm:px-12 sm:py-16 shadow-2xl">
+          <div
+            class="pointer-events-none absolute -top-32 left-1/2 h-64 w-[640px] max-w-full -translate-x-1/2 rounded-full bg-brand/25 blur-[110px]"
+            aria-hidden="true"
+          >
+          </div>
+          <div class="relative grid gap-10 lg:grid-cols-[1fr_1.2fr] items-center">
+            <div>
+              <p class="eyebrow">Get Started Today</p>
+              <h2 class="section-title mt-3">Your next React Native hotfix can ship in 5 minutes.</h2>
+              <p class="mt-4 text-muted-foreground leading-relaxed">
+                Enter your email to receive a scoped app token for our hosted edge cloud, or grab the open-source monorepo from GitHub to self-host on AWS or Cloudflare.
+              </p>
+              <div class="mt-6 flex flex-wrap gap-3">
+                <a href="/docs/getting-started/" class="btn" data-variant="outline" data-size="sm">
+                  <BookOpen /> Read the Docs
+                </a>
+                <a href="/dashboard/" class="btn" data-variant="ghost" data-size="sm">
+                  Explore Live Dashboard <ArrowRight />
+                </a>
+              </div>
+            </div>
+            <EarlyAccess />
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <SiteFooter />
+
+    <script>
+      for (const btn of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+        btn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(btn.dataset.copy ?? "");
+            const [copy, done] = [btn.querySelector("[data-icon=copy]"), btn.querySelector("[data-icon=done]")];
+            copy?.classList.add("hidden");
+            done?.classList.remove("hidden");
+            setTimeout(() => {
+              copy?.classList.remove("hidden");
+              done?.classList.add("hidden");
+            }, 1500);
+          } catch {}
+        });
+      }
+    </script>
+  </body>
+</html>

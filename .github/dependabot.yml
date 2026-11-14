@@ -1,0 +1,27 @@
+# Dependabot handles plain-npm dirs and GitHub Actions. The pnpm workspace at /
+# is intentionally NOT listed: Dependabot's npm updater cannot process
+# pnpm-lock.yaml v10 (every run fails with unknown_error on update_files).
+# Update the workspace manually with `pnpm -r update` / `pnpm outdated` instead.
+# Updates arrive as normal PRs and run through CI like any other change.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /examples/AirdropExample
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 3
+    # Majors (eslint 8->10, babel 7->8...) break the example's flat config and
+    # are triaged by hand; automation only takes minor/patch.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    # Same: majors (checkout 4->7, setup-node 4->7...) are reviewed manually.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

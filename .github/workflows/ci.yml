@@ -1,16 +1,25 @@
 name: CI
 
+# All jobs run on the org's self-hosted macOS Apple Silicon runner
+# (prerequisites: apps/web/src/content/docs/docs/testing.md, "Self-hosted CI runner").
+# Pull requests from forks never run here: a self-hosted runner would execute untrusted code.
+
 on:
   push:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: read
+concurrency:
+  # Per event: a queued push run must not cancel a pending manual (device E2E) run.
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: false
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    name: Unit tests + local E2E
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,13 +34,117 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
-      - run: pnpm build
+      - name: Build landing + docs
+        run: pnpm web:build
       - name: Android UpdateManager unit tests (JVM)
         run: |
           JARS="$RUNNER_TEMP/jars"; CLASSES="$RUNNER_TEMP/classes"
-          mkdir -p "$JARS" "$CLASSES"
+          rm -rf "$CLASSES"; mkdir -p "$JARS" "$CLASSES"
           curl -sSfLo "$JARS/junit.jar" https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar
           curl -sSfLo "$JARS/hamcrest.jar" https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar
           cd packages/react-native/android
           javac -d "$CLASSES" -cp "$JARS/junit.jar" src/main/java/com/rnairdrop/UpdateManager.java src/test/java/com/rnairdrop/UpdateManagerTest.java
           java -cp "$CLASSES:$JARS/junit.jar:$JARS/hamcrest.jar" org.junit.runner.JUnitCore com.rnairdrop.UpdateManagerTest
+      - name: Install example app
+        working-directory: examples/AirdropExample
+        run: npm ci
+      - name: Local E2E (server + CLI + real Hermes bundle + Android client on the JVM)
+        run: bash e2e/local-e2e.sh
+
+  android:
+    name: Android device E2E
+    # Device E2E is slow: run on main and on demand only.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      # Uses the runner's ANDROID_HOME if set, otherwise installs the SDK command-line tools.
+      - uses: android-actions/setup-android@v3
+        with:
+          # The default also installs the long-removed "tools" package, which cmdline-tools 16 rejects.
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - uses: gradle/actions/setup-gradle@v4
+      - run: pnpm install --frozen-lockfile
+      - name: Install example app
+        working-directory: examples/AirdropExample
+        run: npm ci
+      - name: Install Maestro
+        run: |
+          command -v maestro >/dev/null || [ -x "$HOME/.maestro/bin/maestro" ] || curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Run E2E on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: arm64-v8a
+          target: google_apis
+          avd-name: airdrop-e2e
+          force-avd-creation: true
+          disable-animations: true
+          disk-size: 4096M
+          ram-size: 3072M
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          # device-e2e.sh builds the release APK for the emulator's ABI (-PreactNativeArchitectures=arm64-v8a here).
+          script: bash e2e/device-e2e.sh android
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: maestro-android
+          path: ~/.maestro/tests
+
+  ios:
+    name: iOS device E2E
+    # Device E2E is slow: run on main and on demand only.
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check Xcode + CocoaPods
+        run: |
+          xcodebuild -version || { echo "::error::Xcode is not installed on this runner"; exit 1; }
+          pod --version || { echo "::error::CocoaPods is not installed on this runner (brew install cocoapods)"; exit 1; }
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: pnpm install --frozen-lockfile
+      - name: Install example app
+        working-directory: examples/AirdropExample
+        run: npm ci
+      - name: Install Maestro
+        run: |
+          command -v maestro >/dev/null || [ -x "$HOME/.maestro/bin/maestro" ] || curl -fsSL "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Boot simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          xcrun simctl boot "$UDID" || true   # may already be booted on a persistent runner
+          xcrun simctl bootstatus "$UDID" -b
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+      - name: Run E2E on simulator
+        run: bash e2e/device-e2e.sh ios
+      - name: Shut down simulator
+        if: always()
+        run: '[ -z "${SIM_UDID:-}" ] || xcrun simctl shutdown "$SIM_UDID" || true'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: maestro-ios
+          path: ~/.maestro/tests

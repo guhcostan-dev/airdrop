@@ -1,0 +1,45 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "airdrop-server",
+  "main": "src/index.ts",
+  "account_id": "a6294ef6f6ef77aec9e05f8aabb47bb0",
+  "compatibility_date": "2025-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "airdrop",
+      // Self-hosters: replace with the id printed by `wrangler d1 create airdrop`.
+      "database_id": "050a0afa-8a7b-473f-b720-a5dd902af342",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "airdrop-assets"
+    }
+  ],
+  // Abuse protection (Workers rate limiting; period must be 10 or 60 seconds).
+  "ratelimits": [
+    { "name": "RL_WAITLIST", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } },
+    { "name": "RL_AUTH_FAIL", "namespace_id": "1002", "simple": { "limit": 20, "period": 60 } },
+    { "name": "RL_CHECK", "namespace_id": "1003", "simple": { "limit": 60, "period": 60 } }
+  ],
+  // Nightly maintenance: orphaned files, old metering rows (src/maintenance.ts).
+  "triggers": { "crons": ["17 3 * * *"] },
+  "vars": {
+    // Seconds that the "latest updates" lookup is cached per colo. 0 disables.
+    "CHECK_CACHE_TTL": "10",
+    // Origins allowed to submit the website's early-access form (POST /v1/waitlist).
+    "WEB_ORIGINS": "https://airdrop.guhcostan.dev,https://airdrop-web.guhcostan.workers.dev",
+    // AWS Lambda Function URL origin (us-east-2) proxied behind airdrop-api.guhcostan.dev
+    "AWS_ORIGIN": "https://wyyzqc53772b4jdcamirdkh6yu0ydkit.lambda-url.us-east-2.on.aws"
+  }
+  // Production custom domain (attached free via dashboard: Worker → Settings →
+  // Domains & Routes; kept out of this file on purpose so `wrangler deploy`
+  // never detaches it): https://airdrop-api.guhcostan.dev
+  // Secrets (set with `wrangler secret put <NAME>`):
+  //   ADMIN_TOKEN  bootstrap admin token used by the CLI / CI
+}

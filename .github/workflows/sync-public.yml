@@ -1,0 +1,73 @@
+name: Sync public repo
+
+# Publishes the SDK, CLI and core to the public repo guhcostan-dev/airdrop (see scripts/export-public.sh).
+# Secret: PUBLIC_REPO_TOKEN, a fine-grained token on guhcostan-dev/airdrop only,
+# with Contents: read & write and Workflows: read & write (the export includes
+# public-repo/.github/workflows/ci.yml, which requires the Workflows scope to push).
+on:
+  push:
+    branches: [main]
+    paths:
+      - packages/core/**
+      - packages/cli/**
+      - packages/react-native/**
+      - public-repo/**
+      - tsconfig.base.json
+      - LICENSE
+      - scripts/export-public.sh
+  workflow_dispatch:
+
+concurrency:
+  group: sync-public
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    if: github.repository != 'guhcostan-dev/airdrop'
+    runs-on: [self-hosted, macOS, ARM64]
+    env:
+      PUBLIC_REPO_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check token
+        id: token
+        # Without the secret the public repo is synced by hand (bash scripts/export-public.sh <checkout>).
+        run: |
+          if [ -n "$PUBLIC_REPO_TOKEN" ]; then echo "ok=true" >> "$GITHUB_OUTPUT"
+          else echo "::warning::PUBLIC_REPO_TOKEN is not set; skipping the sync to guhcostan-dev/airdrop"; fi
+      - name: Export and push
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          PUB="$RUNNER_TEMP/airdrop-public"
+          rm -rf "$PUB"
+          git clone --depth 1 "https://x-access-token:${PUBLIC_REPO_TOKEN}@github.com/guhcostan-dev/airdrop.git" "$PUB"
+          bash scripts/export-public.sh "$PUB"
+          cd "$PUB"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Public repo already up to date"
+            exit 0
+          fi
+          SUBJECT=$(git -C "$GITHUB_WORKSPACE" log -1 --format=%s)
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "$SUBJECT" -m "Synced from the Airdrop monorepo at ${GITHUB_SHA::12}."
+          git push origin HEAD:main
+      - name: Tag the public repo
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          # Mirror the release tag once the version is on npm (release.yml publishes it).
+          VERSION=$(node -p 'require("./packages/react-native/package.json").version')
+          [ "$(npm view "react-native-airdrop@$VERSION" version 2>/dev/null)" = "$VERSION" ] || exit 0
+          cd "$RUNNER_TEMP/airdrop-public"
+          git fetch -q --depth 1 origin main
+          git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null && exit 0
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            tag -a "v$VERSION" -m "v$VERSION" FETCH_HEAD
+          git push origin "v$VERSION"

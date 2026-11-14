@@ -1,5 +1,13 @@
 packages:
+  - apps/*
   - packages/*
 
 onlyBuiltDependencies:
   - esbuild
+  - workerd
+  - sharp
+
+overrides:
+  # Dev/build-time advisories (GHSA for postcss-selector-parser <7.1.6, esbuild <0.28.1).
+  postcss-selector-parser@<7.1.6: ^7.1.6
+  esbuild@>=0.27.3 <0.28.1: ^0.28.1

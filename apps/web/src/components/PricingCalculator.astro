@@ -1,0 +1,208 @@
+---
+import { Info } from "@lucide/astro";
+import { PRICING_CHECKED, PROVIDERS, formatMau, formatUsd } from "../utils/pricing";
+
+const PRESETS = [10_000, 100_000, 500_000, 1_000_000];
+const DEFAULT_MAU = 100_000;
+const TABLE_MAUS = [10_000, 100_000, 500_000, 1_000_000];
+const defaultMax = Math.max(...PROVIDERS.map((p) => p.cost(DEFAULT_MAU).usd ?? 0), 1);
+---
+
+<div class="rounded-2xl border bg-card" data-pricing data-default={DEFAULT_MAU}>
+  <div class="grid gap-6 border-b p-6 sm:p-8">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <label for="mau" class="text-sm text-muted-foreground">Monthly active users</label>
+        <p class="mt-1 font-mono text-4xl font-semibold tracking-tight tabular-nums" data-mau-label>{formatMau(DEFAULT_MAU)}</p>
+      </div>
+      <div class="flex flex-wrap gap-1.5" role="group" aria-label="Presets">
+        {
+          PRESETS.map((m) => (
+            <button type="button" class="btn" data-variant="outline" data-size="sm" data-preset={m}>
+              {formatMau(m)}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+    <input id="mau" type="range" class="input w-full" min="0" max="1000" step="1" data-slider aria-describedby="pricing-assumptions" />
+  </div>
+
+  <div class="grid gap-5 p-6 sm:p-8" data-bars>
+    {
+      PROVIDERS.map((p) => {
+        const e = p.cost(DEFAULT_MAU);
+        return (
+          <div class="grid gap-2" data-provider={p.id}>
+            <div class="flex items-baseline justify-between gap-3">
+              <p class:list={["text-sm", p.id === "airdrop" ? "font-semibold" : "font-medium"]}>
+                {p.name} <span class="ml-1 text-xs font-normal text-muted-foreground" data-plan>{e.plan}</span>
+              </p>
+              <p class="font-mono text-sm tabular-nums">
+                <span data-usd>{formatUsd(e.usd)}</span>
+                <span class="text-muted-foreground" data-per hidden={e.usd === null}>/mo</span>
+              </p>
+            </div>
+            <div class="h-3 overflow-hidden rounded-full bg-muted/60">
+              <div
+                class:list={["bar h-full rounded-full", p.id === "airdrop" ? "bg-brand" : "bg-muted-foreground/45", e.usd === null && "unknown"]}
+                style={`--w: ${e.usd === null ? 100 : (e.usd / defaultMax) * 100}%; --min: ${e.usd ? "6px" : "0"}`}
+                data-bar
+                title=""
+              />
+            </div>
+          </div>
+        );
+      })
+    }
+    <p class="mt-2 rounded-xl border bg-background/60 p-4 text-sm" data-headline aria-live="polite"></p>
+  </div>
+
+  <details class="group border-t px-6 sm:px-8 [&_summary::-webkit-details-marker]:hidden">
+    <summary class="flex cursor-pointer list-none items-center gap-2 py-4 text-sm text-muted-foreground hover:text-foreground">
+      <Info class="size-4" /> Assumptions, sources and the same numbers as a table
+    </summary>
+    <div class="grid gap-4 pb-6 text-sm text-muted-foreground" id="pricing-assumptions">
+      <p>
+        Monthly list prices from each public pricing page, checked {PRICING_CHECKED}: the cheapest plan that fits your monthly
+        active users, without annual discounts, bandwidth overage or taxes. Airdrop prices are our plans below; above 1M monthly
+        active users we price Enterprise with you.
+      </p>
+      <div class="overflow-x-auto rounded-xl border">
+        <table class="table min-w-[520px]">
+          <thead>
+            <tr>
+              <th class="pl-4">Monthly active users</th>
+              {TABLE_MAUS.map((m) => <th>{formatMau(m)}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {
+              PROVIDERS.map((p) => (
+                <tr>
+                  <td class="pl-4 font-medium text-foreground">
+                    <a href={p.url} class="underline-offset-4 hover:underline" rel="noopener">{p.name}</a>
+                  </td>
+                  {TABLE_MAUS.map((m) => (
+                    <td class="font-mono tabular-nums">{formatUsd(p.cost(m).usd)}</td>
+                  ))}
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+</div>
+
+<style>
+  .bar { width: var(--w, 0%); min-width: var(--min, 0); transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .bar.unknown { background: repeating-linear-gradient(135deg, var(--muted-foreground) 0 2px, transparent 2px 7px); opacity: 0.35; width: 100%; }
+  [data-preset][aria-pressed="true"] { background: var(--accent); border-color: var(--color-brand); }
+</style>
+
+<script>
+  import { PROVIDERS, formatMau, formatUsd } from "../utils/pricing";
+
+  const MIN = 1_000;
+  const MAX = 5_000_000;
+  // Log scale: slider 0..1000 <-> 1K..5M, snapped to a readable step.
+  const toMau = (v: number) => {
+    const raw = MIN * Math.pow(MAX / MIN, v / 1000);
+    const step = raw < 10_000 ? 500 : raw < 100_000 ? 5_000 : raw < 1_000_000 ? 25_000 : 100_000;
+    return Math.round(raw / step) * step;
+  };
+  const toSlider = (mau: number) => (Math.log(mau / MIN) / Math.log(MAX / MIN)) * 1000;
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-pricing]")) {
+    const slider = root.querySelector<HTMLInputElement>("[data-slider]")!;
+    const mauLabel = root.querySelector<HTMLElement>("[data-mau-label]")!;
+    const headline = root.querySelector<HTMLElement>("[data-headline]")!;
+    const presets = [...root.querySelectorAll<HTMLButtonElement>("[data-preset]")];
+    const rows = PROVIDERS.map((p) => {
+      const el = root.querySelector<HTMLElement>(`[data-provider="${p.id}"]`)!;
+      return { p, per: el.querySelector<HTMLElement>("[data-per]")!, plan: el.querySelector<HTMLElement>("[data-plan]")!, usd: el.querySelector<HTMLElement>("[data-usd]")!, bar: el.querySelector<HTMLElement>("[data-bar]")!, shown: 0 };
+    });
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const tween = (row: (typeof rows)[number], to: number | null) => {
+      if (to === null || reduced) {
+        row.usd.textContent = formatUsd(to);
+        row.shown = to ?? 0;
+        return;
+      }
+      const from = row.shown;
+      const t0 = performance.now();
+      const step = (t: number) => {
+        const k = Math.min(1, (t - t0) / 500);
+        const v = from + (to - from) * (1 - Math.pow(1 - k, 3));
+        row.usd.textContent = formatUsd(k === 1 ? to : v);
+        if (k < 1) requestAnimationFrame(step);
+      };
+      row.shown = to;
+      requestAnimationFrame(step);
+    };
+
+    const render = (mau: number) => {
+      mauLabel.textContent = formatMau(mau);
+      slider.style.setProperty("--slider-value", `${(toSlider(mau) / 1000) * 100}%`);
+      presets.forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.preset) === mau)));
+      const costs = rows.map((r) => r.p.cost(mau));
+      const max = Math.max(...costs.map((c) => c.usd ?? 0), 1);
+      rows.forEach((r, i) => {
+        const c = costs[i];
+        r.plan.textContent = c.note ? `${c.plan} · ${c.note}` : c.plan;
+        r.bar.classList.toggle("unknown", c.usd === null);
+        r.per.hidden = c.usd === null;
+        r.bar.style.setProperty("--w", c.usd === null ? "100%" : `${(c.usd / max) * 100}%`);
+        r.bar.style.setProperty("--min", c.usd ? "6px" : "0");
+        r.bar.title = `${r.p.name}: ${formatUsd(c.usd)}/mo at ${formatMau(mau)} MAU (${c.plan})`;
+        tween(r, c.usd);
+      });
+      const oursKnown = costs[0].usd;
+      const ours = oursKnown ?? 0;
+      const priciest = rows
+        .map((r, i) => ({ name: r.p.name, usd: costs[i].usd }))
+        .slice(1)
+        .filter((c): c is { name: string; usd: number } => c.usd !== null)
+        .sort((x, y) => y.usd - x.usd)[0];
+      const cheapest = rows
+        .map((r, i) => ({ name: r.p.name, usd: costs[i].usd }))
+        .slice(1)
+        .filter((c): c is { name: string; usd: number } => c.usd !== null && c.usd > ours)
+        .sort((x, y) => x.usd - y.usd)[0];
+      if (oursKnown === null) {
+        const vs = priciest ? ` For comparison, ${priciest.name} lists <b>${formatUsd(priciest.usd)}/mo</b>.` : "";
+        headline.innerHTML = `Above <b>1M</b> monthly active users, Airdrop Enterprise is priced with you: <a class="underline underline-offset-4" href="#access">talk to us</a>.${vs}`;
+      } else if (!priciest || priciest.usd <= ours) {
+        headline.innerHTML = `At <b>${formatMau(mau)}</b> monthly active users everyone has a free tier. Airdrop stays at <b>${formatUsd(ours)}</b> as you grow.`;
+      } else {
+        const save = (priciest.usd - ours) * 12;
+        const vsCheapest = cheapest ? ` and <b>$${Math.round((cheapest.usd - ours) * 12).toLocaleString("en-US")}/year</b> vs ${cheapest.name}` : "";
+        const oursText = ours === 0 ? `is <b class="text-brand">free</b>` : `costs <b class="text-brand">${formatUsd(ours)}/mo</b>`;
+        headline.innerHTML = `At <b>${formatMau(mau)}</b> monthly active users, Airdrop ${oursText}. That saves <b>$${Math.round(save).toLocaleString("en-US")}/year</b> vs ${priciest.name}${vsCheapest}.`;
+      }
+    };
+
+    const set = (mau: number) => {
+      slider.value = String(toSlider(mau));
+      render(mau);
+    };
+    slider.addEventListener("input", () => render(toMau(Number(slider.value))));
+    presets.forEach((b) => b.addEventListener("click", () => set(Number(b.dataset.preset))));
+
+    // Grow the bars from zero when the section scrolls into view.
+    rows.forEach((r) => r.bar.style.setProperty("--w", "0%"));
+    new IntersectionObserver(
+      ([e], obs) => {
+        if (e.isIntersecting) {
+          set(Number(root.dataset.default));
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    ).observe(root);
+    slider.value = String(toSlider(Number(root.dataset.default)));
+  }
+</script>

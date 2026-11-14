@@ -1,0 +1,29 @@
+{
+  "name": "@rn-airdrop/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "react-native-airdrop update server (Cloudflare Workers + D1 + R2).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler d1 migrations apply airdrop --local && wrangler dev",
+    "deploy": "wrangler d1 migrations apply airdrop --remote && wrangler deploy",
+    "migrate:local": "wrangler d1 migrations apply airdrop --local",
+    "migrate:remote": "wrangler d1 migrations apply airdrop --remote",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "cf-typegen": "wrangler types"
+  },
+  "dependencies": {
+    "@rn-airdrop/core": "workspace:*",
+    "hono": "^4.13.16"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "^3.1169.0",
+    "@cloudflare/vitest-plugin": "^1.4.2",
+    "@cloudflare/workers-types": "^5.20261014.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.151.0"
+  }
+}

@@ -1,17 +1,23 @@
 {
-  "name": "airdrop-react-native",
+  "name": "react-native-airdrop-monorepo",
   "private": true,
-  "version": "0.0.0",
-  "description": "SDK and CLI for Airdrop over-the-air updates for React Native.",
+  "version": "0.1.0",
+  "description": "Over-the-air updates for React Native, self-hosted on Cloudflare.",
   "license": "MIT",
   "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm -r --filter './packages/*' build",
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "dev:server": "pnpm --filter @rn-airdrop/server dev",
+    "deploy:server": "pnpm --filter @rn-airdrop/server deploy",
+    "web:dev": "pnpm --filter @rn-airdrop/web dev",
+    "web:build": "pnpm --filter @rn-airdrop/web build",
+    "deploy:web": "pnpm --filter @rn-airdrop/web deploy",
+    "deploy:aws": "bash scripts/deploy-aws.sh"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

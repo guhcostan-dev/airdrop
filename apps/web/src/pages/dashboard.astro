@@ -1,0 +1,468 @@
+---
+import { KeyRound, LogOut, Play, RefreshCw, ShieldCheck, ShieldOff, Trash2 } from "@lucide/astro";
+import Page from "../layouts/Page.astro";
+import { API } from "../utils/site";
+---
+
+<Page title="Dashboard" description="Releases, rollouts and usage for your Airdrop app." noindex>
+  <div data-dash data-api={API}>
+    <!-- Sign in -->
+    <section class="mx-auto max-w-md" data-view="signin">
+      <div class="card border-white/12 bg-[#0B0E1A]/90">
+        <header>
+          <span class="mb-3 inline-flex size-9 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand"><KeyRound size={18} /></span>
+          <h1 class="text-xl font-semibold tracking-tight text-white">Sign in to your dashboard</h1>
+          <p>Use the app token from your onboarding email (the same one the CLI uses), or explore the interactive demo workspace.</p>
+        </header>
+        <section>
+          <form class="grid gap-4" data-signin>
+            <div class="grid gap-2">
+              <label for="token" class="text-sm font-medium">App token</label>
+              <input id="token" name="token" type="password" autocomplete="current-password" required placeholder="ad_…" class="input font-mono" />
+            </div>
+            <label class="flex items-center gap-2 text-sm text-muted-foreground">
+              <input type="checkbox" name="remember" class="accent-[var(--color-brand)]" /> Remember on this device
+            </label>
+            <button type="submit" class="btn">Sign in with token</button>
+            <div class="relative my-1 flex items-center justify-center">
+              <div class="h-px w-full bg-white/10"></div>
+              <span class="bg-[#0B0E1A] px-3 text-xs text-muted-foreground uppercase font-mono">or</span>
+              <div class="h-px w-full bg-white/10"></div>
+            </div>
+            <button type="button" class="btn" data-variant="secondary" data-demo>
+              <Play class="size-4 text-cyan-400" /> Launch Interactive Demo Workspace
+            </button>
+            <p class="text-sm text-bad" data-signin-error aria-live="polite"></p>
+          </form>
+        </section>
+        <footer class="text-xs text-muted-foreground">
+          No token yet? <a href="/#access" class="ml-1 underline underline-offset-4">Request early access</a>
+        </footer>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section class="hidden" data-view="app">
+      <div class="mb-6 hidden items-center justify-between gap-3 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-xs sm:text-sm text-cyan-200" data-demo-banner>
+        <span><strong>Interactive Sandbox Mode:</strong> Exploring <code>Acme Commerce (Demo)</code>. Try changing rollout percentages, filtering channels, or rolling back releases below!</span>
+        <a href="/#access" class="btn shrink-0" data-size="sm">Get your real token</a>
+      </div>
+
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="eyebrow">Dashboard</p>
+          <h1 class="mt-2 text-3xl font-semibold tracking-tight" data-app-name>App</h1>
+          <p class="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span class="font-mono" data-app-id></span>
+            <span class="badge" data-variant="outline" data-plan></span>
+            <span class="badge gap-1" data-variant="outline" data-signed></span>
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <select class="select hidden" data-app-select aria-label="App"></select>
+          <button type="button" class="btn" data-variant="outline" data-size="sm" data-refresh><RefreshCw /> Refresh</button>
+          <button type="button" class="btn" data-variant="ghost" data-size="sm" data-signout><LogOut /> Sign out</button>
+        </div>
+      </div>
+
+      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+        <div class="rounded-xl border bg-card p-5">
+          <p class="text-sm text-muted-foreground">Monthly active devices <span data-month></span></p>
+          <p class="mt-1 text-2xl font-semibold tabular-nums" data-mau>–</p>
+          <div class="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div class="h-full rounded-full bg-brand transition-[width] duration-700" data-mau-bar style="width:0%"></div></div>
+        </div>
+        <div class="rounded-xl border bg-card p-5">
+          <p class="text-sm text-muted-foreground">Storage</p>
+          <p class="mt-1 text-2xl font-semibold tabular-nums" data-storage>–</p>
+          <div class="mt-3 h-2 overflow-hidden rounded-full bg-muted"><div class="h-full rounded-full bg-brand transition-[width] duration-700" data-storage-bar style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-5" data-billing>
+        <div>
+          <p class="font-medium" data-billing-title>Plan</p>
+          <p class="text-sm text-muted-foreground" data-billing-text></p>
+        </div>
+        <div class="flex flex-wrap gap-2" data-billing-actions></div>
+      </div>
+      <p class="mt-3 hidden rounded-xl border border-ok/30 bg-ok/10 p-3 text-sm text-ok" data-billing-ok>Thanks! Your plan updates as soon as the payment is confirmed (usually a few seconds). Refresh to see it.</p>
+      <p class="mt-3 hidden rounded-xl border border-bad/30 bg-bad/10 p-3 text-sm text-bad" data-over-limit>
+        Over your plan's monthly active devices: devices keep working, but new releases are paused until you upgrade.
+      </p>
+
+      <div class="mt-12 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-semibold tracking-tight">Releases</h2>
+          <p class="text-sm text-muted-foreground">Newest first. Publish from the CLI: <code class="kbd">airdrop release -p ios</code></p>
+        </div>
+        <div class="flex gap-2">
+          <select class="select" data-filter="platform" aria-label="Platform">
+            <option value="">All platforms</option><option value="ios">iOS</option><option value="android">Android</option>
+          </select>
+          <select class="select" data-filter="channel" aria-label="Channel">
+            <option value="">All channels</option><option value="production">production</option><option value="staging">staging</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-4 overflow-x-auto rounded-xl border bg-card">
+        <table class="table min-w-[860px]">
+          <thead>
+            <tr>
+              <th class="pl-4">Release</th><th>Target</th><th>Status</th><th class="text-right">Installs</th><th class="text-right">Rollbacks</th><th class="text-right">Errors</th><th class="pr-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody data-releases></tbody>
+        </table>
+        <p class="hidden p-6 text-center text-sm text-muted-foreground" data-empty>No releases yet. Run <code class="kbd">airdrop release</code> from your project.</p>
+      </div>
+      <p class="mt-2 text-sm text-muted-foreground" aria-live="polite" data-action-status></p>
+
+      <details class="mt-16 rounded-xl border border-bad/30 p-5 [&_summary::-webkit-details-marker]:hidden">
+        <summary class="cursor-pointer list-none text-sm font-medium text-bad">Danger zone</summary>
+        <div class="mt-4 grid gap-3 text-sm text-muted-foreground">
+          <p>Deleting the app removes all its releases, files, usage records and tokens. Devices fall back to the bundle in their store build. This can't be undone.</p>
+          <form class="flex flex-wrap items-center gap-2" data-delete>
+            <input class="input max-w-xs" name="confirm" placeholder="Type the app name to confirm" autocomplete="off" />
+            <button type="submit" class="btn" data-variant="destructive" data-size="sm"><Trash2 /> Delete app</button>
+          </form>
+        </div>
+      </details>
+    </section>
+  </div>
+  <template data-icons><span data-i="on"><ShieldCheck class="size-3.5" /></span><span data-i="off"><ShieldOff class="size-3.5" /></span></template>
+</Page>
+
+<script>
+  type App = { id: string; name: string; plan?: string; signingPublicKey: string | null };
+  type Usage = { month: string; plan: string; activeDevices: number; activeDevicesLimit: number | null; storageBytes: number; storageBytesLimit: number | null; overLimit: boolean };
+  type Billing = { enabled: boolean; plans: string[] };
+  type Update = { id: string; createdAt: string; channel: string; platform: string; runtimeVersion: string; message: string | null; mandatory: boolean; rolloutPercentage: number; enabled: boolean; signature: string | null; stats?: Record<string, number> };
+
+  const root = document.querySelector<HTMLElement>("[data-dash]")!;
+  const API = root.dataset.api!;
+  const $ = <T extends HTMLElement = HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+  const KEY = "airdrop.token";
+  const store = {
+    get: () => { try { return sessionStorage.getItem(KEY) ?? localStorage.getItem(KEY); } catch { return null; } },
+    set: (t: string, remember: boolean) => { try { (remember ? localStorage : sessionStorage).setItem(KEY, t); } catch {} },
+    clear: () => { try { sessionStorage.removeItem(KEY); localStorage.removeItem(KEY); } catch {} },
+  };
+  let token: string | null = store.get();
+  let isDemo = false;
+  let apps: App[] = [];
+  let app: App | null = null;
+  let updates: Update[] = [];
+  let billing: Billing = { enabled: false, plans: [] };
+  const PRICES: Record<string, number> = { pro: 19, scale: 79 };
+
+  const DEMO_APP: App = {
+    id: "9f1c2d4a-88b1-4c90-a12f-78e9102bc301",
+    name: "Acme Commerce (Demo)",
+    plan: "pro",
+    signingPublicKey: "BOr8k2xP9dLm7vQw1zR5tY8uI0oP3aS6dF9gH2jK5lZ8xC1vB4nM7qW0eR3tY6uI9oP2aS5dF8gH1jK4lZ7xC0=",
+  };
+  const DEMO_USAGE: Usage = {
+    month: "2026-11",
+    plan: "pro",
+    activeDevices: 48320,
+    activeDevicesLimit: 100000,
+    storageBytes: 314572800,
+    storageBytesLimit: 10737418240,
+    overLimit: false,
+  };
+  const DEMO_UPDATES: Update[] = [
+    {
+      id: "7c070454-e9b2-4d11-a831-9102bc301f44",
+      createdAt: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
+      channel: "production",
+      platform: "ios",
+      runtimeVersion: "2.4.0",
+      message: "Fix checkout currency rounding on Apple Pay",
+      mandatory: true,
+      rolloutPercentage: 100,
+      enabled: true,
+      signature: "MEYCIQDx9...",
+      stats: { install: 31420, rollback: 0, error: 2 },
+    },
+    {
+      id: "9a41bc82-d10f-4f92-b122-48102bc39911",
+      createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+      channel: "production",
+      platform: "android",
+      runtimeVersion: "2.4.0",
+      message: "Enable Black Friday 40% banner & Pix instant badge",
+      mandatory: false,
+      rolloutPercentage: 25,
+      enabled: true,
+      signature: "MEUCIQDa1...",
+      stats: { install: 8910, rollback: 1, error: 0 },
+    },
+    {
+      id: "e1904c11-77a1-4c20-9011-00912bc81723",
+      createdAt: new Date(Date.now() - 14 * 3600 * 1000).toISOString(),
+      channel: "staging",
+      platform: "ios",
+      runtimeVersion: "2.5.0-rc1",
+      message: "Test new Fabric checkout bottom sheet animation",
+      mandatory: false,
+      rolloutPercentage: 100,
+      enabled: true,
+      signature: "MEQCIG81...",
+      stats: { install: 42, rollback: 0, error: 0 },
+    },
+    {
+      id: "b400192a-11c4-4e89-8821-77123bc90112",
+      createdAt: new Date(Date.now() - 48 * 3600 * 1000).toISOString(),
+      channel: "production",
+      platform: "ios",
+      runtimeVersion: "2.4.0",
+      message: "Experimental cart prefetch (rolled back)",
+      mandatory: false,
+      rolloutPercentage: 10,
+      enabled: false,
+      signature: "MEYCIQDp2...",
+      stats: { install: 1420, rollback: 18, error: 4 },
+    },
+  ];
+
+  class ApiError extends Error { constructor(public status: number, msg: string) { super(msg); } }
+  async function api<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const res = await fetch(API + path, {
+      method,
+      headers: { authorization: `Bearer ${token}`, ...(body ? { "content-type": "application/json" } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (res.status === 204) return undefined as T;
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new ApiError(res.status, (data as { error?: string }).error ?? `HTTP ${res.status}`);
+    return data as T;
+  }
+
+  const fmtBytes = (n: number) => (n < 1024 ? `${n} B` : n < 1024 ** 2 ? `${(n / 1024).toFixed(0)} KB` : n < 1024 ** 3 ? `${(n / 1024 ** 2).toFixed(1)} MB` : `${(n / 1024 ** 3).toFixed(2)} GB`);
+  const fmtNum = (n: number) => n.toLocaleString("en-US");
+  const show = (view: "signin" | "app") => root.querySelectorAll<HTMLElement>("[data-view]").forEach((v) => v.classList.toggle("hidden", v.dataset.view !== view));
+  const status = (msg: string, bad = false) => { const el = $("[data-action-status]"); el.textContent = msg; el.classList.toggle("text-bad", bad); };
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls = "", text?: string) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  function startDemo() {
+    isDemo = true;
+    token = null;
+    apps = [DEMO_APP];
+    app = DEMO_APP;
+    updates = structuredClone(DEMO_UPDATES);
+    const banner = $("[data-demo-banner]");
+    banner.classList.remove("hidden");
+    banner.classList.add("flex");
+    $("[data-app-name]").textContent = app.name;
+    $("[data-app-id]").textContent = app.id;
+    const signed = $("[data-signed]");
+    const icon = root.parentElement!.querySelector<HTMLTemplateElement>("[data-icons]")!.content.querySelector('[data-i="on"]')!.cloneNode(true);
+    signed.replaceChildren(icon, document.createTextNode("Signed updates (ECDSA P-256)"));
+    applyUsage(DEMO_USAGE);
+    renderReleases();
+    show("app");
+  }
+
+  function applyUsage(usage: Usage) {
+    $("[data-plan]").textContent = `${usage.plan[0]!.toUpperCase()}${usage.plan.slice(1)} plan`;
+    $("[data-month]").textContent = `(${usage.month})`;
+    $("[data-mau]").textContent = `${fmtNum(usage.activeDevices)} / ${usage.activeDevicesLimit === null ? "unlimited" : fmtNum(usage.activeDevicesLimit)}`;
+    $("[data-storage]").textContent = `${fmtBytes(usage.storageBytes)} / ${usage.storageBytesLimit === null ? "unlimited" : fmtBytes(usage.storageBytesLimit)}`;
+    const pct = (n: number, d: number | null) => (d ? `${Math.min(100, (n / d) * 100)}%` : "0%");
+    $("[data-mau-bar]").style.width = pct(usage.activeDevices, usage.activeDevicesLimit);
+    $("[data-storage-bar]").style.width = pct(usage.storageBytes, usage.storageBytesLimit);
+    $("[data-over-limit]").classList.toggle("hidden", !usage.overLimit);
+    renderBilling(usage.plan);
+  }
+
+  async function signIn(t: string, remember: boolean) {
+    isDemo = false;
+    $("[data-demo-banner]").classList.add("hidden");
+    token = t;
+    try {
+      apps = (await api<{ apps: App[] }>("GET", "/v1/apps")).apps;
+    } catch (err) {
+      token = null;
+      throw err;
+    }
+    store.set(t, remember);
+    billing = await fetch(`${API}/v1/billing/config`).then((r) => r.json()).catch(() => billing);
+    if (!apps.length) throw new ApiError(404, "This token has no apps yet.");
+    const select = $<HTMLSelectElement>("[data-app-select]");
+    select.replaceChildren(...apps.map((a) => Object.assign(el("option", "", a.name), { value: a.id })));
+    select.classList.toggle("hidden", apps.length < 2);
+    await openApp(apps[0]!.id);
+    show("app");
+  }
+
+  async function openApp(id: string) {
+    app = apps.find((a) => a.id === id) ?? null;
+    if (!app) return;
+    $("[data-app-name]").textContent = app.name;
+    $("[data-app-id]").textContent = app.id;
+    const signed = $("[data-signed]");
+    const icon = root.parentElement!.querySelector<HTMLTemplateElement>("[data-icons]")!.content.querySelector(`[data-i="${app.signingPublicKey ? "on" : "off"}"]`)!.cloneNode(true);
+    signed.replaceChildren(icon, document.createTextNode(app.signingPublicKey ? "Signed updates" : "Signing off"));
+    await refresh();
+  }
+
+  async function refresh() {
+    if (!app) return;
+    if (isDemo) {
+      applyUsage(DEMO_USAGE);
+      renderReleases();
+      return;
+    }
+    const [usage, list] = await Promise.all([
+      api<Usage>("GET", `/v1/apps/${app.id}/usage`),
+      api<{ updates: Update[] }>("GET", `/v1/apps/${app.id}/updates?limit=100`),
+    ]);
+    updates = list.updates;
+    applyUsage(usage);
+    renderReleases();
+  }
+
+  function renderBilling(plan: string) {
+    const title = $("[data-billing-title]");
+    const text = $("[data-billing-text]");
+    const actions = $("[data-billing-actions]");
+    title.textContent = `${plan[0]!.toUpperCase()}${plan.slice(1)} plan`;
+    actions.replaceChildren();
+    const order = ["free", "pro", "scale", "enterprise"];
+    const upgrades = billing.plans.filter((p) => order.indexOf(p) > order.indexOf(plan));
+    if (!billing.enabled) {
+      text.textContent = "Need more devices or storage? We'll move you to a bigger plan.";
+      const a = Object.assign(el("a", "btn", "Talk to us"), { href: "/#access" });
+      a.setAttribute("data-variant", "outline"); a.setAttribute("data-size", "sm");
+      actions.append(a);
+      return;
+    }
+    text.textContent = upgrades.length ? "Upgrade any time; billing is monthly and handled by Stripe." : "Manage your subscription, invoices and payment method.";
+    for (const p of upgrades) {
+      const b = el("button", "btn", `Upgrade to ${p[0]!.toUpperCase()}${p.slice(1)} · $${PRICES[p]}/mo`);
+      b.setAttribute("data-size", "sm");
+      b.onclick = () => go(`/v1/apps/${app!.id}/billing/checkout`, { plan: p });
+      actions.append(b);
+    }
+    if (plan === "pro" || plan === "scale") {
+      const m = el("button", "btn", "Manage billing");
+      m.setAttribute("data-variant", "outline"); m.setAttribute("data-size", "sm");
+      m.onclick = () => go(`/v1/apps/${app!.id}/billing/portal`, {});
+      actions.append(m);
+    }
+  }
+
+  async function go(path: string, body: unknown) {
+    try {
+      const { url } = await api<{ url: string }>("POST", path, body);
+      location.assign(url);
+    } catch (err) {
+      status((err as Error).message, true);
+    }
+  }
+
+  function renderReleases() {
+    const platform = $<HTMLSelectElement>('[data-filter="platform"]').value;
+    const channel = $<HTMLSelectElement>('[data-filter="channel"]').value;
+    const rows = updates.filter((u) => (!platform || u.platform === platform) && (!channel || u.channel === channel));
+    const tbody = $("[data-releases]");
+    tbody.replaceChildren(
+      ...rows.map((u) => {
+        const tr = el("tr");
+        const first = el("td", "py-3 pl-4");
+        first.append(el("div", "font-medium text-foreground", u.message || "(no message)"), el("div", "font-mono text-xs text-muted-foreground", `${u.id.slice(0, 8)} · ${new Date(u.createdAt).toLocaleString()}`));
+        const target = el("td", "py-3 text-sm");
+        target.append(el("div", "", `${u.platform} · ${u.channel}`), el("div", "text-xs text-muted-foreground", `runtime ${u.runtimeVersion}${u.signature ? " · signed" : ""}${u.mandatory ? " · mandatory" : ""}`));
+        const state = el("td", "py-3");
+        state.append(el("span", "badge", !u.enabled ? "Rolled back" : u.rolloutPercentage < 100 ? `${u.rolloutPercentage}% rollout` : "Live"));
+        state.firstElementChild!.setAttribute("data-variant", !u.enabled ? "destructive" : u.rolloutPercentage < 100 ? "outline" : "secondary");
+        const stat = (k: string) => el("td", "py-3 text-right tabular-nums", fmtNum(u.stats?.[k] ?? 0));
+        const actions = el("td", "py-3 pr-4");
+        const wrap = el("div", "flex items-center justify-end gap-1.5");
+        if (u.enabled) {
+          const input = Object.assign(el("input", "input h-8 w-16 text-right"), { type: "number", min: "1", max: "100", value: String(u.rolloutPercentage) });
+          input.setAttribute("aria-label", "Rollout percentage");
+          const apply = el("button", "btn", "Set %");
+          apply.setAttribute("data-variant", "outline"); apply.setAttribute("data-size", "sm");
+          apply.onclick = () => act(u, { rolloutPercentage: Number(input.value) }, `Rollout set to ${input.value}%`);
+          const rb = el("button", "btn", "Roll back");
+          rb.setAttribute("data-variant", "ghost"); rb.setAttribute("data-size", "sm");
+          rb.onclick = () => confirm("Roll back this release? Devices on it fall back to the previous release (or the store build).") && act(u, { enabled: false }, "Rolled back");
+          wrap.append(input, apply, rb);
+        } else {
+          const resume = el("button", "btn", "Resume");
+          resume.setAttribute("data-variant", "outline"); resume.setAttribute("data-size", "sm");
+          resume.onclick = () => act(u, { enabled: true }, "Resumed");
+          wrap.append(resume);
+        }
+        actions.append(wrap);
+        tr.append(first, target, state, stat("install"), stat("rollback"), stat("error"), actions);
+        return tr;
+      }),
+    );
+    $("[data-empty]").classList.toggle("hidden", rows.length > 0);
+  }
+
+  async function act(u: Update, patch: Record<string, unknown>, done: string) {
+    if (patch.rolloutPercentage !== undefined) {
+      const n = patch.rolloutPercentage as number;
+      if (!Number.isInteger(n) || n < 1 || n > 100) return status("Rollout must be a whole number from 1 to 100.", true);
+    }
+    if (isDemo) {
+      if (patch.rolloutPercentage !== undefined) u.rolloutPercentage = patch.rolloutPercentage as number;
+      if (patch.enabled !== undefined) u.enabled = patch.enabled as boolean;
+      status(`${done} · ${u.id.slice(0, 8)} (demo workspace)`);
+      renderReleases();
+      return;
+    }
+    try {
+      await api("PATCH", `/v1/apps/${app!.id}/updates/${u.id}`, patch);
+      status(`${done} · ${u.id.slice(0, 8)}`);
+      await refresh();
+    } catch (err) {
+      status((err as Error).message, true);
+    }
+  }
+
+  $<HTMLButtonElement>("[data-demo]").addEventListener("click", startDemo);
+  $<HTMLFormElement>("[data-signin]").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    const form = ev.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    const errEl = $("[data-signin-error]");
+    errEl.textContent = "";
+    try {
+      await signIn(String(data.get("token") ?? "").trim(), data.get("remember") === "on");
+      form.reset();
+    } catch (err) {
+      const e = err as ApiError;
+      errEl.textContent = e.status === 401 ? "That token isn't valid." : e.status === 429 ? "Too many attempts, wait a minute." : e.message;
+    }
+  });
+  $("[data-signout]").addEventListener("click", () => { store.clear(); token = null; isDemo = false; app = null; show("signin"); });
+  $("[data-refresh]").addEventListener("click", () => refresh().then(() => status("Updated")).catch((e) => status(e.message, true)));
+  $<HTMLSelectElement>("[data-app-select]").addEventListener("change", (ev) => openApp((ev.target as HTMLSelectElement).value));
+  root.querySelectorAll("[data-filter]").forEach((f) => f.addEventListener("change", renderReleases));
+  $<HTMLFormElement>("[data-delete]").addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    if (isDemo) return status("Demo workspace cannot be deleted.", true);
+    const typed = String(new FormData(ev.currentTarget as HTMLFormElement).get("confirm") ?? "");
+    if (!app || typed !== app.name) return status("Type the app name exactly to confirm.", true);
+    try {
+      await api("DELETE", `/v1/apps/${app.id}`);
+      store.clear(); token = null; show("signin");
+      $("[data-signin-error]").textContent = "App deleted.";
+    } catch (err) {
+      status((err as Error).message, true);
+    }
+  });
+
+  if (new URLSearchParams(location.search).get("billing") === "success") $("[data-billing-ok]").classList.remove("hidden");
+  if (new URLSearchParams(location.search).get("demo") === "1") startDemo();
+  else if (token) signIn(token, false).catch(() => { store.clear(); token = null; show("signin"); });
+</script>

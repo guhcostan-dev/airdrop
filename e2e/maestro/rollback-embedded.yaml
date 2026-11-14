@@ -1,0 +1,17 @@
+# All updates were disabled on the server: the device returns to the embedded bundle.
+appId: ${APP_ID}
+---
+- launchApp:
+    stopApp: true
+- extendedWaitUntil:
+    visible: "Check for update"
+    timeout: 60000
+- tapOn: "Check for update"
+- extendedWaitUntil:
+    visible: "rolledBackToEmbedded"
+    timeout: 60000
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: "release: embedded"
+    timeout: 60000

@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "airdrop-web",
+  "account_id": "a6294ef6f6ef77aec9e05f8aabb47bb0",
+  "compatibility_date": "2025-09-01",
+  // Static site (landing + docs) served by Workers static assets.
+  // Production custom domain (attached free via dashboard: Worker → Settings →
+  // Domains & Routes; kept out of this file on purpose so `wrangler deploy`
+  // never detaches it): https://airdrop.guhcostan.dev
+  "assets": { "directory": "./dist", "not_found_handling": "404-page" }
+}

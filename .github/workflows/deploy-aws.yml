@@ -1,0 +1,40 @@
+name: Deploy AWS (S3 + CloudFront + Lambda)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - apps/web/**
+      - apps/server/**
+      - packages/core/**
+      - scripts/deploy-aws.sh
+
+concurrency:
+  group: deploy-aws
+  cancel-in-progress: false
+
+jobs:
+  deploy-aws:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-2
+      AIRDROP_ADMIN_TOKEN: ${{ secrets.AIRDROP_ADMIN_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Configure AWS credentials
+        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Deploy Web (S3 + CloudFront) & API (Lambda + S3)
+        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+        run: bash scripts/deploy-aws.sh

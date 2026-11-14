@@ -1,0 +1,149 @@
+name: RN compatibility
+
+# Builds a fresh React Native app per version with the SDK installed from its npm tarball,
+# for Android and iOS, so the "React Native 0.71+" claim stays true. (0.87 is covered by the
+# device E2E in ci.yml.) Runs weekly, on demand, and when the SDK's native code changes.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 5 * * 1"
+  push:
+    paths:
+      - .github/workflows/rn-compat.yml
+      - packages/react-native/android/**
+      - packages/react-native/ios/**
+      - packages/react-native/ReactNativeAirdrop.podspec
+      - packages/react-native/package.json
+      - packages/react-native/plugin/**
+
+concurrency:
+  group: rn-compat-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: RN ${{ matrix.rn }} · ${{ matrix.platform }}
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        rn: ["0.71.19", "0.73.11", "0.76.9", "0.80.3", "0.84.1"]
+        platform: [android, ios]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - if: matrix.platform == 'android'
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - run: pnpm install --frozen-lockfile
+      - name: Pack the SDK
+        run: |
+          pnpm --filter react-native-airdrop build
+          (cd packages/react-native && npm pack --pack-destination "$RUNNER_TEMP" >/dev/null)
+          echo "SDK_TGZ=$(ls "$RUNNER_TEMP"/react-native-airdrop-*.tgz)" >> "$GITHUB_ENV"
+      - name: Create a React Native ${{ matrix.rn }} app
+        working-directory: ${{ runner.temp }}
+        env:
+          RN: ${{ matrix.rn }}
+        run: |
+          rm -rf RNCompat
+          MINOR=$(echo "$RN" | cut -d. -f2)
+          if [ "$MINOR" -lt 75 ]; then
+            # --npm: the old CLI otherwise picks up a global Yarn (PnP, no node_modules) for the template.
+            npx --yes "react-native@$RN" init RNCompat --version "$RN" --skip-install --npm
+          else
+            npx --yes @react-native-community/cli@latest init RNCompat --version "$RN" --skip-install --skip-git-init --install-pods false
+          fi
+          cd RNCompat
+          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund "$SDK_TGZ"
+          # Use the SDK from JS too, so autolinking and the TS entry are exercised.
+          printf "import { withAirdrop } from 'react-native-airdrop';\nexport { withAirdrop };\n" > airdrop-check.js
+      - name: Build Android
+        if: matrix.platform == 'android'
+        working-directory: ${{ runner.temp }}/RNCompat/android
+        run: ./gradlew assembleDebug -PreactNativeArchitectures=arm64-v8a --no-daemon -q
+      - name: Build iOS
+        if: matrix.platform == 'ios'
+        working-directory: ${{ runner.temp }}/RNCompat/ios
+        run: |
+          # RN <= 0.72 calls ERB.new(template, 0, '->'), which Ruby 3.4 no longer accepts (a React Native
+          # issue, not ours): use the keyword form. No-op on newer versions.
+          SP=../node_modules/react-native/scripts/react_native_pods_utils/script_phases.rb
+          [ -f "$SP" ] && sed -i '' "s/ERB.new(template, 0, '->')/ERB.new(template, trim_mode: '->')/" "$SP"
+          pod install
+          xcodebuild -workspace RNCompat.xcworkspace -scheme RNCompat -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO -quiet build
+
+  expo:
+    name: Expo (latest) · ${{ matrix.platform }} · config plugin
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        platform: [android, ios]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - if: matrix.platform == 'android'
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - run: pnpm install --frozen-lockfile
+      - name: Pack the SDK
+        run: |
+          pnpm --filter react-native-airdrop build
+          (cd packages/react-native && npm pack --pack-destination "$RUNNER_TEMP" >/dev/null)
+          echo "SDK_TGZ=$(ls "$RUNNER_TEMP"/react-native-airdrop-*.tgz)" >> "$GITHUB_ENV"
+      - name: Create an Expo app with the plugin and prebuild
+        working-directory: ${{ runner.temp }}
+        run: |
+          rm -rf ExpoCompat
+          npx --yes create-expo-app@latest ExpoCompat --template blank-typescript --no-install
+          cd ExpoCompat
+          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund "$SDK_TGZ"
+          node -e '
+            const fs = require("fs"); const j = JSON.parse(fs.readFileSync("app.json"));
+            j.expo.plugins = [...(j.expo.plugins || []), ["react-native-airdrop", { appId: "11111111-2222-3333-4444-555555555555" }]];
+            j.expo.ios = { ...(j.expo.ios || {}), bundleIdentifier: "dev.airdrop.expocompat" };
+            j.expo.android = { ...(j.expo.android || {}), package: "dev.airdrop.expocompat" };
+            fs.writeFileSync("app.json", JSON.stringify(j, null, 2));'
+          npx expo prebuild --no-install --clean --platform ${{ matrix.platform }}
+          grep -rq "Airdrop" ${{ matrix.platform }}/ || { echo "::error::plugin did not patch the native project"; exit 1; }
+      - name: Build Android (release)
+        if: matrix.platform == 'android'
+        working-directory: ${{ runner.temp }}/ExpoCompat/android
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a --no-daemon -q
+      - name: Build iOS (release)
+        if: matrix.platform == 'ios'
+        working-directory: ${{ runner.temp }}/ExpoCompat/ios
+        run: |
+          pod install
+          xcodebuild -workspace ExpoCompat.xcworkspace -scheme ExpoCompat -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO -quiet build

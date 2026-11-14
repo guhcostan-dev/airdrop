@@ -1,0 +1,91 @@
+---
+import Page from "../layouts/Page.astro";
+import { GITHUB } from "../utils/site";
+const UPDATED = "October 15, 2026";
+---
+
+<Page title="Terms of Service" description="The terms for using the Airdrop over-the-air update service.">
+  <article class="prose-page">
+    <h1>Terms of Service</h1>
+    <p>Last updated: {UPDATED}</p>
+    <p>
+      These terms govern your use of Airdrop, a hosted service that delivers over-the-air JavaScript and asset updates to
+      React Native apps ("the Service"), including the API at <code>airdrop-api.guhcostan.dev</code>, the website and
+      dashboard. By requesting access, using an app token or publishing an update, you agree to them on behalf of yourself
+      or the organization you represent ("you").
+    </p>
+
+    <h2>1. The Service and early access</h2>
+    <p>
+      Airdrop is in early access: we onboard customers individually and features may change. The software development kit
+      (SDK) and command-line tool are open source under the MIT license; these terms cover the hosted Service, not your use
+      of that code.
+    </p>
+
+    <h2>2. Accounts and app tokens</h2>
+    <ul>
+      <li>We issue app tokens scoped to your app. Keep them secret; you're responsible for activity under your tokens.</li>
+      <li>Tell us promptly if a token may be compromised so we can revoke it.</li>
+      <li>We strongly recommend enabling code signing (<code>airdrop init --sign</code>) so devices only accept updates signed with your private key, which we never receive.</li>
+    </ul>
+
+    <h2>3. Your content</h2>
+    <p>
+      You keep all rights to the bundles, assets and release notes you upload ("Your Content"). You grant us a limited
+      license to store, process and deliver Your Content to your app's users solely to provide the Service. You confirm you
+      have the rights to Your Content and that delivering it complies with the policies of Apple, Google and any store you
+      distribute through. Airdrop only updates JavaScript and assets; you must not use it to download executable native code.
+    </p>
+
+    <h2>4. Acceptable use</h2>
+    <ul>
+      <li>No malware, unlawful content, or content that infringes others' rights.</li>
+      <li>No attempts to access other customers' data, probe or overload the Service, or bypass rate limits and plan limits.</li>
+      <li>No reselling of the Service without a written agreement.</li>
+    </ul>
+
+    <h2>5. Plans, limits and fees</h2>
+    <p>
+      Plans and prices are listed on our <a href="/#pricing">pricing page</a> and are based on monthly active devices
+      (distinct installs that check for updates in a calendar month, UTC) and storage. If your app exceeds its plan by more
+      than 10%, publishing new updates is paused until you upgrade or the next month starts; devices keep receiving the
+      updates already published. During early access, fees are agreed with you directly. We'll give at least 30 days' notice
+      before changing the price of a plan you're on.
+    </p>
+
+    <h2>6. Availability and support</h2>
+    <p>
+      We work to keep the Service available and fast, but during early access it is provided without a service-level
+      agreement unless one is agreed in writing (Enterprise). If the Service is unavailable, apps keep running the bundle
+      already on the device. Support is provided through your onboarding contact and
+      <a href={`${GITHUB}/issues`}>GitHub issues</a> for the SDK and CLI.
+    </p>
+
+    <h2>7. Data protection</h2>
+    <p>
+      Our <a href="/privacy/">Privacy Policy</a> explains what we process. For data about your app's users you are the
+      controller and we process it on your behalf, only to provide the Service.
+    </p>
+
+    <h2>8. Ending the Service</h2>
+    <p>
+      You can stop at any time and delete your app and its data (<code>DELETE /v1/apps/:id</code> or by asking us). We may
+      suspend or end access for breach of these terms, non-payment or to protect the Service or other customers, with notice
+      where reasonably possible. On termination we delete your app's data as described in the Privacy Policy.
+    </p>
+
+    <h2>9. Disclaimers and liability</h2>
+    <p>
+      To the extent permitted by law, the Service is provided "as is", without warranties of any kind. You are responsible
+      for testing the updates you publish. Neither party is liable for indirect or consequential damages, lost profits or
+      lost data, and our total liability for any claim is limited to the fees you paid for the Service in the 12 months before
+      the claim. Nothing in these terms limits liability that cannot be limited by law.
+    </p>
+
+    <h2>10. Changes and contact</h2>
+    <p>
+      We may update these terms; material changes will be announced to customers at least 30 days before they take effect.
+      Questions: contact us through your onboarding email or the <a href="/#access">early-access form</a>.
+    </p>
+  </article>
+</Page>

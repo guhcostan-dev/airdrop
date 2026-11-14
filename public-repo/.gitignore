@@ -1,0 +1,11 @@
+node_modules/
+dist/
+lib/
+*.log
+.DS_Store
+coverage/
+*.pem
+!**/fixtures/*.pem
+**/android/build/
+**/android/.cxx/
+packages/react-native/README.md

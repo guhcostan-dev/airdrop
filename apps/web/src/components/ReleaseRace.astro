@@ -1,0 +1,92 @@
+---
+// Benefit, visualized: a store release vs an Airdrop release, racing to "users have the fix".
+import { RotateCcw, Store, Zap } from "@lucide/astro";
+
+const store = [
+  { label: "Build & submit", time: "~1 h", w: 10 },
+  { label: "Store review", time: "hours to days", w: 30 },
+  { label: "Users update the app", time: "days to weeks", w: 60 },
+];
+---
+
+<div class="rounded-2xl border bg-card p-6 sm:p-8" data-race>
+  <div class="grid min-w-0 grid-cols-1 gap-8">
+    <div>
+      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <p class="flex items-center gap-2 font-medium"><Store class="size-4 text-muted-foreground" /> Store release</p>
+        <p class="race-done text-sm text-muted-foreground" data-done="store">Most users fixed in <b class="font-medium text-foreground">weeks</b></p>
+      </div>
+      <div class="mt-3 flex h-10 gap-1 overflow-hidden rounded-lg bg-muted/50">
+        {
+          store.map((s, i) => (
+            <div class="race-seg relative h-full min-w-0 overflow-hidden rounded-md" style={`flex: ${s.w} 1 0%`}>
+              <div class="race-fill absolute inset-0 rounded-md bg-muted-foreground/25" style={`--delay: ${[0, 0.6, 2.2][i]}s; --dur: ${[0.6, 1.6, 3.2][i]}s`} />
+              <span class="relative flex h-full items-center gap-1.5 truncate px-3 text-xs">
+                {s.label} <span class="text-muted-foreground">· {s.time}</span>
+              </span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div>
+      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <p class="flex items-center gap-2 font-medium"><Zap class="size-4 text-brand" /> Airdrop release</p>
+        <p class="race-done text-sm text-muted-foreground" data-done="airdrop">Users fixed on <b class="font-medium text-foreground">next launch</b></p>
+      </div>
+      <div class="mt-3 flex h-10 gap-1 overflow-hidden rounded-lg bg-muted/50">
+        <div class="race-seg relative h-full min-w-0 overflow-hidden rounded-md" style="flex: 30 1 0%">
+          <div class="race-fill absolute inset-0 rounded-md bg-brand/80" style="--delay: 0s; --dur: 0.5s"></div>
+          <span class="relative flex h-full items-center truncate px-3 text-xs font-medium text-white">release · ~2 min</span>
+        </div>
+        <div class="min-w-0" style="flex: 70 1 0%"></div>
+      </div>
+    </div>
+  </div>
+  <div class="mt-6 flex items-center justify-between gap-4 border-t pt-4 text-xs text-muted-foreground">
+    <span>Illustrative timeline. Review times vary; most users don't update the same day.</span>
+    <button type="button" class="btn" data-variant="ghost" data-size="sm" data-replay><RotateCcw /> Replay</button>
+  </div>
+</div>
+
+<style>
+  .race-fill { transform: scaleX(0); transform-origin: left; }
+  [data-race].is-running .race-fill { animation: race-fill var(--dur) cubic-bezier(0.4, 0, 0.2, 1) var(--delay) forwards; }
+  [data-race].is-done .race-fill { transform: none; }
+  .race-done { opacity: 0; transform: translateX(6px); transition: opacity 0.4s ease, transform 0.4s ease; }
+  .race-done.is-on { opacity: 1; transform: none; }
+  @keyframes race-fill { to { transform: scaleX(1); } }
+  @media (max-width: 640px) { .race-seg span { font-size: 10px; padding-inline: 6px; } }
+</style>
+
+<script>
+  for (const race of document.querySelectorAll<HTMLElement>("[data-race]")) {
+    const done = (k: string) => race.querySelector(`[data-done="${k}"]`)!.classList.add("is-on");
+    let timers: number[] = [];
+    const run = () => {
+      timers.forEach(clearTimeout);
+      race.classList.remove("is-running", "is-done");
+      race.querySelectorAll(".race-done").forEach((d) => d.classList.remove("is-on"));
+      void race.offsetWidth; // restart CSS animations
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        race.classList.add("is-done");
+        done("airdrop");
+        done("store");
+        return;
+      }
+      race.classList.add("is-running");
+      timers = [window.setTimeout(() => done("airdrop"), 600), window.setTimeout(() => done("store"), 5500)];
+    };
+    new IntersectionObserver(
+      ([e], obs) => {
+        if (e.isIntersecting) {
+          run();
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.5 },
+    ).observe(race);
+    race.querySelector("[data-replay]")!.addEventListener("click", run);
+  }
+</script>
