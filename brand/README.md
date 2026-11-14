@@ -1,15 +1,15 @@
 # Airdrop brand
 
-The mark is a parachute carrying a package: an update delivered from above, landing on the device.
+The mark represents a payload delivered over the air: a minimalist canopy opening above a verified package.
 
 | file | use |
-|---|---|
-| `logo.svg` | primary mark (app-icon tile, violet → cyan). Favicon, docs, avatars |
-| `logo-mono.svg` | single-color glyph (`currentColor`), for one-color contexts and small UI |
-| `logo-512.png` | raster mark, e.g. GitHub org / npm avatar |
-| `logo-wordmark-light.png` / `-dark.png` | mark + name, for light / dark backgrounds (README header) |
-| `og.png` | 1200×630 social card |
+| --- | --- |
+| `logo.svg` | primary monochrome app-icon mark (`#f3f3f1` on `#111112`) |
+| `logo-mono.svg` | single-color glyph (`currentColor`) |
+| `logo-512.png` | raster icon (`512x512`) |
+| `logo-wordmark-light.png` / `-dark.png` | wordmark for light / dark backgrounds |
+| `architecture.svg` / `architecture.png` | system flow diagram |
+| `og.png` | `1200x630` OpenGraph card |
 
-Colors: violet `#8B6CFF` → cyan `#22D3EE` (45°), on near-black `#0D0C14`. Type: Geist (semibold for the name).
-Copies used by the website live in `apps/web/public/brand/` (served at `https://airdrop.guhcostan.dev/brand/`).
-Keep the mark on its tile; don't recolor the gradient or stretch it.
+Palette: `#0b0b0c` background, `#171718` surface, `#f3f3f1` ink, `#b8cdbb` accent.
+Web copies live in `apps/web/public/brand/`.

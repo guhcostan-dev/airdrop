@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1564" fill="none">
+  <rect width="720" height="1564" fill="#101111"/>
+  <!-- Status bar -->
+  <text x="72" y="64" fill="#f2f3ef" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="26" font-weight="600">9:41</text>
+  <g transform="translate(566, 44)" fill="#f2f3ef">
+    <rect x="0" y="10" width="6" height="10" rx="2"/>
+    <rect x="10" y="7" width="6" height="13" rx="2"/>
+    <rect x="20" y="4" width="6" height="16" rx="2"/>
+    <rect x="30" y="0" width="6" height="20" rx="2"/>
+    <rect x="52" y="2" width="38" height="18" rx="5" fill="none" stroke="#f2f3ef" stroke-width="2.5"/>
+    <rect x="56" y="6" width="26" height="10" rx="2.5" fill="#f2f3ef"/>
+  </g>
+
+  <!-- App Header -->
+  <text x="360" y="148" text-anchor="middle" fill="#f2f3ef" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="30" font-weight="600" letter-spacing="-0.5">production · v2.4.1</text>
+  <text x="360" y="182" text-anchor="middle" fill="#92958f" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="20">Rollout em tempo real</text>
+
+  <!-- Note: x=139..581, y=206..648 is the 442x442 cutout where .widget-sun-slot docks -->
+
+  <!-- 4 Metric Columns below the Sunburst (y=690) -->
+  <g transform="translate(48, 696)" font-family="-apple-system, BlinkMacSystemFont, sans-serif">
+    <g transform="translate(0, 0)">
+      <circle cx="14" cy="14" r="6" fill="#FF0000"/>
+      <text x="28" y="20" fill="#92958f" font-size="20">Hermes</text>
+      <text x="8" y="56" fill="#f2f3ef" font-size="30" font-weight="600">98,4<tspan fill="#92958f" font-size="20" font-weight="400">%</tspan></text>
+    </g>
+    <g transform="translate(162, 0)">
+      <circle cx="14" cy="14" r="6" fill="#00FF00"/>
+      <text x="28" y="20" fill="#92958f" font-size="20">Estável</text>
+      <text x="8" y="56" fill="#f2f3ef" font-size="30" font-weight="600">99,9<tspan fill="#92958f" font-size="20" font-weight="400">%</tspan></text>
+    </g>
+    <g transform="translate(324, 0)">
+      <circle cx="14" cy="14" r="6" fill="#FFC400"/>
+      <text x="28" y="20" fill="#92958f" font-size="20">Cache</text>
+      <text x="8" y="56" fill="#f2f3ef" font-size="30" font-weight="600">96,5<tspan fill="#92958f" font-size="20" font-weight="400">%</tspan></text>
+    </g>
+    <g transform="translate(486, 0)">
+      <circle cx="14" cy="14" r="6" fill="#52B9F3"/>
+      <text x="28" y="20" fill="#92958f" font-size="20">Latência</text>
+      <text x="8" y="56" fill="#f2f3ef" font-size="30" font-weight="600">38<tspan fill="#92958f" font-size="20" font-weight="400"> ms</tspan></text>
+    </g>
+  </g>
+
+  <!-- Release Feed Cards below metrics (y=810..1480) -->
+  <g transform="translate(44, 812)" font-family="-apple-system, BlinkMacSystemFont, sans-serif">
+    <text x="8" y="0" fill="#92958f" font-size="20" font-weight="500">RELEASES RECENTES</text>
+
+    <g transform="translate(0, 26)">
+      <rect width="632" height="172" rx="34" fill="#18191a" stroke="#ffffff12"/>
+      <text x="34" y="56" fill="#f2f3ef" font-size="28" font-weight="600">v2.4.1 · Checkout instantâneo</text>
+      <text x="34" y="92" fill="#92958f" font-size="21">Hermes HBC · Ed25519 verificado · há 4 min</text>
+      <text x="34" y="136" fill="#b8cdbb" font-size="21" font-weight="500">1.780 / 2.000 dispositivos (89,0%)</text>
+      <text x="598" y="62" text-anchor="end" fill="#f2f3ef" font-size="30" font-weight="500">180 KB</text>
+    </g>
+
+    <g transform="translate(0, 218)">
+      <rect width="632" height="172" rx="34" fill="#18191a" stroke="#ffffff12"/>
+      <text x="34" y="56" fill="#f2f3ef" font-size="28" font-weight="600">v2.4.0 · Nova sacola Pix</text>
+      <text x="34" y="92" fill="#92958f" font-size="21">Hermes HBC · Ed25519 verificado · ontem</text>
+      <text x="34" y="136" fill="#92958f" font-size="21">100% entregue · 0 rollbacks</text>
+      <text x="598" y="62" text-anchor="end" fill="#f2f3ef" font-size="30" font-weight="500">214 KB</text>
+    </g>
+
+    <g transform="translate(0, 410)">
+      <rect width="632" height="172" rx="34" fill="#18191a" stroke="#ffffff12"/>
+      <text x="34" y="56" fill="#f2f3ef" font-size="28" font-weight="600">v2.3.9 · Ajuste de biometria</text>
+      <text x="34" y="92" fill="#92958f" font-size="21">Hermes HBC · Ed25519 verificado · 3 dias</text>
+      <text x="34" y="136" fill="#92958f" font-size="21">100% entregue · 0 rollbacks</text>
+      <text x="598" y="62" text-anchor="end" fill="#f2f3ef" font-size="30" font-weight="500">142 KB</text>
+    </g>
+  </g>
+
+  <!-- Home Indicator -->
+  <rect x="240" y="1528" width="240" height="10" rx="5" fill="#f2f3ef" opacity="0.8"/>
+</svg>

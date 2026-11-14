@@ -2,35 +2,24 @@
 import { GITHUB } from "../utils/site";
 ---
 
-<header class="pumpy-header is-scrolled" data-nav-style="capsule" style="padding-top: 6px;">
-  <div class="pumpy-header-inner">
-    <a class="pumpy-header-logo" href="/" aria-label="Airdrop Home">
-      <svg width="28" height="28" viewBox="0 0 120 120" aria-hidden="true">
-        <path
-          d="M22 46 C22 20, 98 20, 98 46 C98 52, 91 55, 84 53 C76 51, 68 51, 60 53 C52 51, 44 51, 36 53 C29 55, 22 52, 22 46 Z"
-          fill="var(--pumpy-body)"
-        />
-        <line x1="33" y1="50" x2="42" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
-        <line x1="87" y1="50" x2="78" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
-        <rect x="26" y="56" width="68" height="50" rx="25" fill="var(--pumpy-body)" />
-        <ellipse cx="47" cy="80" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
-        <ellipse cx="73" cy="80" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
-      </svg>
-      <span>Airdrop</span>
+<header class="sticky top-0 z-30 border-b border-white/8 bg-[#0b0b0c]/85 backdrop-blur-xl">
+  <div class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
+    <a href="/" class="inline-flex items-center gap-2.5 font-medium tracking-tight text-[#f3f3f1]" aria-label="Airdrop Home">
+      <img src="/pumpy/assets/airdrop-mark.svg" alt="" width="28" height="28" />
+      <span class="text-base">Airdrop</span>
     </a>
 
-    <nav class="pumpy-nav" aria-label="Navegação principal">
-      <a href="/#demonstracao">Como funciona</a>
-      <a href="/#telemetria">Telemetria</a>
-      <a href="/#recursos">Recursos</a>
-      <a href="/#playground">Playground</a>
-      <a href="/docs/getting-started/">Docs</a>
-      <a href="/dashboard/">Console</a>
-      <a href={GITHUB}>GitHub</a>
+    <nav class="hidden items-center gap-6 text-xs text-[#b5b5b3] sm:flex" aria-label="Navegação principal">
+      <a href="/#demonstracao" class="transition-colors hover:text-[#f3f3f1]">Como funciona</a>
+      <a href="/#inspecao" class="transition-colors hover:text-[#f3f3f1]">Inspeção</a>
+      <a href="/#recursos" class="transition-colors hover:text-[#f3f3f1]">Recursos</a>
+      <a href="/docs/getting-started/" class="transition-colors hover:text-[#f3f3f1]">Docs</a>
+      <a href="/dashboard/" class="transition-colors hover:text-[#f3f3f1]">Console</a>
+      <a href={GITHUB} class="transition-colors hover:text-[#f3f3f1]">GitHub</a>
     </nav>
 
-    <div class="pumpy-header-actions">
-      <a href="/" class="pumpy-button pumpy-button-small pumpy-button-secondary">
+    <div class="flex items-center gap-2">
+      <a href="/" class="rounded-full border border-white/12 bg-[#171718] px-3.5 py-1.5 text-xs font-medium text-[#f3f3f1] transition-colors hover:bg-[#202021]">
         ← Início
       </a>
     </div>

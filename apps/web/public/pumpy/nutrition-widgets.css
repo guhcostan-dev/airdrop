@@ -1,0 +1,256 @@
+/* One daily view, arranged around the real Pumpy app. */
+.nutrition-dashboard {
+  --widget-padding: 12px;
+  --bento-top-row: clamp(170px, calc((var(--pumpy-viewport-height, 100svh) - 440px) / 2), 250px);
+  --bento-row: clamp(150px, calc((var(--pumpy-viewport-height, 100svh) - 400px) / 2), 190px);
+  --bento-height: calc(var(--bento-top-row) + var(--bento-row) + 150px);
+  --diet-device-width: min(246px, calc((var(--bento-height) - 32px) * .46));
+  --widget-level-0: #ffffff0b;
+  --widget-level-1: #ffffff38;
+  --widget-level-2: #ffffff80;
+  --widget-level-3: #ffffffe0;
+  --widget-bar: #efefed;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: var(--bento-top-row) var(--bento-row) 126px;
+  gap: 12px;
+  width: min(1120px, calc(100vw - 48px));
+  margin: 100px auto 0;
+  color: var(--text);
+}
+[data-theme="light"] .nutrition-dashboard {
+  --widget-level-0: #00000009;
+  --widget-level-1: #00000030;
+  --widget-level-2: #00000075;
+  --widget-level-3: #000000d4;
+  --widget-bar: #292a28;
+}
+.nutrition-dashboard .nutrition-widget-shell { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.nutrition-dashboard .bento-calories { position: relative; grid-area: 1 / 1 / 4 / 5; }
+.nutrition-dashboard .bento-activity { grid-area: 2 / 5 / 3 / 8; }
+.nutrition-dashboard .bento-weight { grid-area: 2 / 8 / 3 / 11; }
+.nutrition-dashboard .bento-training { grid-area: 2 / 11 / 3 / 13; }
+.nutrition-dashboard .bento-phone { grid-area: 1 / 5 / 2 / 13; }
+.nutrition-dashboard .bento-integrations { grid-area: 3 / 5 / 4 / 10; }
+.nutrition-dashboard .bento-dock { grid-area: 3 / 10 / 4 / 13; }
+.nutrition-dashboard .nutrition-widget-title { flex: none; margin: 0 0 10px; color: var(--text); font-size: 12px; line-height: 18px; font-weight: 500; letter-spacing: -.01em; }
+.nutrition-dashboard .nutrition-widget {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--widget-padding);
+  border: 0;
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: none;
+  overflow: hidden;
+}
+/* A frontal iPhone keeps the captured screen and the live chart in one coordinate space. */
+.nutrition-dashboard .bento-calories > .nutrition-widget-title { position: absolute; z-index: 1; bottom: 15px; left: 18px; margin: 0; }
+.nutrition-dashboard .nutrition-widget-nutrition { padding: 0; justify-content: flex-start; overflow: visible; }
+.nutrition-dashboard .bento-diet-device { position: relative; top: -18px; flex: none; width: var(--diet-device-width); max-width: calc(100% + 4px); padding: 6px; border: 1px solid #66676b; border-radius: 35px; background: #080809; box-shadow: 0 0 0 2px #242529, inset 0 0 0 1px #0b0b0c, 0 18px 30px #0003; transform: none; animation: none; transition: none; }
+.nutrition-dashboard .bento-diet-device::before, .nutrition-dashboard .bento-diet-device::after, .nutrition-dashboard .bento-diet-lock { content: ""; position: absolute; width: 3px; border-radius: 2px; background: #606165; }
+.nutrition-dashboard .bento-diet-device::before { top: 17%; left: -4px; height: 21px; }
+.nutrition-dashboard .bento-diet-device::after { top: 25%; left: -4px; height: 32px; box-shadow: 0 39px 0 #606165; }
+.nutrition-dashboard .bento-diet-lock { top: 29%; right: -4px; height: 54px; }
+.nutrition-dashboard .bento-diet-screen { position: relative; width: 100%; aspect-ratio: 1320 / 2868; overflow: hidden; border-radius: 28px; background: #101111; background: color(display-p3 .062745098 .066666667 .066666667); transform: none; }
+.nutrition-dashboard .bento-diet-screen > img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.nutrition-dashboard .bento-diet-island { position: absolute; z-index: 3; top: 2.1%; left: 34%; width: 32%; height: 3.3%; border-radius: 20px; background: #030303; }
+.nutrition-dashboard .bento-diet-chart-mask { display: none; position: absolute; z-index: 1; left: 19.01515152%; top: 13.04044630%; width: 61.96969697%; aspect-ratio: 1; background: #101111; background: color(display-p3 .062745098 .066666667 .066666667); }
+.nutrition-story.has-live-sun .bento-diet-chart-mask { display: block; }
+.nutrition-dashboard .bento-diet-screen .widget-sun-slot { position: absolute; z-index: 2; left: 19.31818182%; top: 13.17991632%; width: 61.36363636%; aspect-ratio: 1; padding: 0; margin: 0; }
+.nutrition-dashboard .widget-summary { flex: none; width: 100%; }
+.nutrition-dashboard .widget-summary > strong { display: block; font-size: 24px; line-height: 29px; font-weight: 500; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.nutrition-dashboard .widget-summary > strong > span { font-size: 12px; font-weight: 400; letter-spacing: -.01em; }
+.nutrition-dashboard .widget-summary > small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; line-height: 14px; font-weight: 400; }
+.nutrition-dashboard .nutrition-widget-month .widget-summary { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+.nutrition-dashboard .nutrition-widget-month .widget-summary > strong { font-size: 14px; line-height: 20px; letter-spacing: -.025em; white-space: nowrap; }
+.nutrition-dashboard .nutrition-widget-month .widget-summary > small { margin: 0; font-size: 9px; }
+.nutrition-dashboard .widget-month-grid { display: grid; flex: none; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; width: min(132px, 100%, calc(var(--bento-row) - 48px)); padding: 0; margin: 6px 0 0; list-style: none; }
+.nutrition-dashboard .widget-month-grid > [data-level] { display: block; min-width: 0; aspect-ratio: 1; padding: 0; margin: 0; border: 0; border-radius: 3px; background: var(--widget-level-0); }
+.nutrition-dashboard .widget-month-grid > [data-level="1"] { background: var(--widget-level-1); }
+.nutrition-dashboard .widget-month-grid > [data-level="2"] { background: var(--widget-level-2); }
+.nutrition-dashboard .widget-month-grid > [data-level="3"] { background: var(--widget-level-3); }
+.nutrition-dashboard .widget-weight-chart { display: block; flex: none; width: 100%; height: clamp(34px, calc(var(--bento-row) - 120px), 70px); margin: 6px 0 0; overflow: visible; color: var(--widget-bar); }
+.nutrition-dashboard .widget-weight-chart path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.nutrition-dashboard .widget-chart-endpoints { display: flex; flex: none; justify-content: space-between; width: 100%; margin-top: 2px; color: var(--muted); font-size: 9px; line-height: 11px; }
+.nutrition-dashboard .widget-training-bars { --bar-track-height: clamp(24px, calc(var(--bento-row) - 132px), 58px); display: grid; flex: none; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: min(190px, 100%); height: calc(var(--bar-track-height) + 18px); margin: 8px 0 0; padding: 0; }
+.nutrition-dashboard .widget-training-week { display: grid; grid-template-rows: var(--bar-track-height) 14px; row-gap: 4px; height: 100%; min-width: 0; }
+.nutrition-dashboard .widget-training-bar-track { display: flex; align-items: flex-end; justify-content: center; height: var(--bar-track-height); min-width: 0; }
+.nutrition-dashboard .widget-training-bar { display: block; width: min(32px, 100%); height: var(--bar-height, 0%); min-height: 2px; border-radius: 6px 6px 3px 3px; background: var(--widget-bar); transform-origin: center bottom; }
+.nutrition-dashboard .widget-training-label { display: block; text-align: center; color: var(--muted); font-size: 9px; line-height: 14px; }
+.nutrition-dashboard .widget-training-week:nth-child(1) .widget-training-bar { background: var(--widget-level-1); }
+.nutrition-dashboard .widget-training-week:nth-child(2) .widget-training-bar { background: var(--widget-level-2); }
+.nutrition-dashboard .widget-training-week:nth-child(3) .widget-training-bar { background: var(--widget-level-3); }
+/* Original user-supplied mockups: keep their pixels and physical perspective intact. */
+.nutrition-dashboard .nutrition-widget-phone { padding: 0; overflow: visible; isolation: isolate; }
+.nutrition-dashboard .bento-device-crop { position: absolute; inset: -30px 0 0; overflow: hidden; border-radius: 0 0 24px 24px; pointer-events: none; }
+.nutrition-dashboard .bento-device { position: absolute; top: 0; left: 70%; width: max(75%, 480px); max-width: 680px; aspect-ratio: 1; transform: translate(-50%, -18.844444%); animation: none; transition: none; }
+.nutrition-dashboard .bento-phone-image { display: block; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; animation: none; transition: none; }
+.nutrition-dashboard .bento-phone-image-light { display: none; }
+[data-theme="light"] .nutrition-dashboard .bento-phone-image-dark { display: none; }
+[data-theme="light"] .nutrition-dashboard .bento-phone-image-light { display: block; }
+.nutrition-dashboard .nutrition-widget-dock { padding: 0; justify-content: flex-start; align-items: stretch; }
+.nutrition-dashboard .bento-dock-crop { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.nutrition-dashboard .bento-dock-device { position: absolute; bottom: 20%; left: -14%; width: 175%; aspect-ratio: 1; transform: translateY(12%); animation: none; transition: none; }
+.nutrition-dashboard .bento-dock-device img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.nutrition-dashboard .bento-notification-stack { position: absolute; z-index: 3; left: 14px; bottom: 12px; width: min(41%, 290px); display: grid; gap: 7px; }
+.nutrition-dashboard .bento-notification { display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 8px; padding: 9px; border: 1px solid #ffffff0b; border-radius: 17px; background: #242424e8; box-shadow: 0 8px 20px #0002; backdrop-filter: blur(18px); }
+.nutrition-dashboard .bento-notification > img { display: block; width: 28px; height: 28px; padding: 0; border-radius: 7px; object-fit: cover; background: #fff; }
+.nutrition-dashboard .bento-notification-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; color: var(--muted); font-size: 8px; line-height: 10px; }
+.nutrition-dashboard .bento-notification-meta small { font-size: 8px; }
+.nutrition-dashboard .bento-notification strong { display: block; font-size: 10px; line-height: 13px; font-weight: 500; letter-spacing: -.015em; }
+.nutrition-dashboard .bento-notification p { margin: 2px 0 0; color: var(--muted); font-size: 9px; line-height: 11px; }
+[data-theme="light"] .nutrition-dashboard .bento-notification { border-color: #00000008; background: #fffffff0; box-shadow: 0 8px 20px #0000000d; }
+/* The upper right corner remains available for Pumpy. */
+.nutrition-dashboard .nutrition-widget-integrations { display: block; padding: 13px 16px; }
+.nutrition-dashboard .bento-integration-copy { min-width: 0; padding-right: 58px; }
+.nutrition-dashboard .bento-integration-copy h3 { margin: 0; font-size: 17px; line-height: 22px; font-weight: 500; letter-spacing: -.04em; }
+.nutrition-dashboard .bento-integration-copy p { display: none; }
+.nutrition-dashboard .bento-integration-list { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; width: 100%; margin-top: 10px; align-items: start; }
+.nutrition-dashboard .bento-integration-list::before { content: ""; position: absolute; top: 18px; left: 30px; right: 30px; height: 1px; background: var(--line-strong); }
+.nutrition-dashboard .bento-integration { position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.nutrition-dashboard .bento-integration-icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin-bottom: 5px; border-radius: 50%; background: var(--surface-inset); }
+.nutrition-dashboard .bento-integration-icon img { display: block; width: 24px; height: 24px; object-fit: contain; border-radius: 6px; }
+.nutrition-dashboard .bento-integration-name { color: var(--text); font-size: 9px; line-height: 12px; text-align: center; white-space: nowrap; }
+/* JS moves the original NutritionSun; static mode uses the same slot. */
+.nutrition-story.is-animated .nutrition-dashboard { position: absolute; left: 0; top: 0; margin: 0; }
+.widget-sun-slot .nutrition-overview { width: 100%; margin: 0; }
+.nutrition-story:not(.is-animated) .nutrition-dashboard { max-width: 100%; }
+.nutrition-dashboard-trigger { display: none; background: none; color: var(--text); font-size: 11px; min-height: 44px; padding: 0; }
+.nutrition-dashboard-trigger > [aria-hidden] { margin-left: 6px; }
+.is-animated .nutrition-dashboard-trigger { display: inline-block; }
+.is-animated .nutrition-canvas { z-index: 2; pointer-events: none; }
+.is-animated .nutrition-canvas button { pointer-events: auto; }
+@media (max-width: 1000px) and (min-width: 761px) {
+  .nutrition-dashboard .bento-weight { grid-area: 2 / 8 / 3 / 10; }
+  .nutrition-dashboard .bento-training { grid-area: 2 / 10 / 3 / 13; }
+  .nutrition-dashboard .nutrition-widget-month .widget-summary { display: block; }
+  .nutrition-dashboard .nutrition-widget-month .widget-summary > small { display: none; }
+  .nutrition-dashboard .widget-summary > strong { font-size: 22px; }
+  .nutrition-dashboard .widget-summary > strong > span { font-size: 10px; }
+  .nutrition-dashboard .widget-summary > small { font-size: 9px; }
+  .nutrition-dashboard .bento-notification-stack { left: 10px; width: 42%; bottom: 10px; }
+  .nutrition-dashboard .bento-notification { gap: 6px; padding: 8px; }
+  .nutrition-dashboard .bento-notification p { display: none; }
+  .nutrition-dashboard .bento-integration-name { font-size: 8px; }
+}
+@media (max-width: 760px) {
+  .nutrition-dashboard { --widget-padding: 14px; --diet-shell-height: min(520px, calc(var(--pumpy-viewport-height, 100svh) - 230px)); --diet-device-width: min(246px, calc((var(--diet-shell-height) - 12px) * .46)); grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: var(--diet-shell-height) 360px 190px 180px 180px; gap: 12px; width: calc(100vw - 32px); }
+  .nutrition-dashboard .bento-calories { grid-area: 1 / 1 / 2 / 3; }
+  .nutrition-dashboard .bento-phone { grid-area: 2 / 1 / 3 / 3; }
+  .nutrition-dashboard .bento-activity { grid-area: 3 / 1 / 4 / 2; }
+  .nutrition-dashboard .bento-weight { grid-area: 3 / 2 / 4 / 3; }
+  .nutrition-dashboard .bento-training { grid-area: 4 / 1 / 5 / 2; }
+  .nutrition-dashboard .bento-dock { grid-area: 4 / 2 / 5 / 3; }
+  .nutrition-dashboard .bento-integrations { grid-area: 5 / 1 / 6 / 3; }
+  .nutrition-dashboard .nutrition-widget { border-radius: 20px; }
+  .nutrition-dashboard .bento-calories > .nutrition-widget-title { bottom: 14px; }
+  .nutrition-dashboard .widget-summary > strong { font-size: 20px; line-height: 24px; }
+  .nutrition-dashboard .widget-summary > strong > span { font-size: 10px; }
+  .nutrition-dashboard .widget-summary > small { font-size: 9px; line-height: 12px; }
+  .nutrition-dashboard .nutrition-widget-month .widget-summary { display: block; }
+  .nutrition-dashboard .nutrition-widget-month .widget-summary > strong { font-size: 13px; line-height: 18px; }
+  .nutrition-dashboard .nutrition-widget-month .widget-summary > small { margin-top: 2px; }
+  .nutrition-dashboard .widget-month-grid { width: min(132px, calc(100% - 30px)); margin-top: 14px; }
+  .nutrition-dashboard .widget-month-grid > [data-level] { border-radius: 2px; }
+  .nutrition-dashboard .widget-weight-chart { height: 72px; margin-top: 10px; }
+  .nutrition-dashboard .widget-chart-endpoints { font-size: 8px; line-height: 11px; }
+  .nutrition-dashboard .widget-training-bars { --bar-track-height: 60px; gap: 10px; width: min(160px, 100%); margin-top: 10px; }
+  .nutrition-dashboard .widget-training-bar { width: min(26px, 100%); border-radius: 5px 5px 3px 3px; }
+  .nutrition-dashboard .widget-training-label { font-size: 8px; }
+  .nutrition-dashboard .bento-device { left: 50%; width: calc(100% + 116px); max-width: 620px; }
+  .nutrition-dashboard .bento-device-crop { border-radius: 0 0 20px 20px; }
+  .nutrition-dashboard .bento-notification-stack { left: 14px; right: 14px; width: auto; bottom: 16px; gap: 8px; }
+  .nutrition-dashboard .bento-notification { padding: 11px; }
+  .nutrition-dashboard .bento-notification-meta { font-size: 9px; line-height: 12px; }
+  .nutrition-dashboard .bento-notification strong { font-size: 11px; line-height: 15px; }
+  .nutrition-dashboard .bento-notification p { font-size: 9px; line-height: 13px; }
+  .nutrition-dashboard .nutrition-widget-integrations { padding: 19px 18px; }
+  .nutrition-dashboard .bento-integration-list { margin-top: 18px; }
+  .nutrition-dashboard .bento-integration-name { font-size: 9px; white-space: normal; }
+}
+@media (max-width: 359px) {
+  .nutrition-dashboard { --widget-padding: 12px; }
+  .nutrition-dashboard .bento-notification-stack { left: 12px; right: 12px; }
+  .nutrition-dashboard .bento-notification strong { font-size: 10px; }
+  .nutrition-dashboard .bento-notification p { font-size: 8px; }
+}
+[data-theme="light"] .bento-integration-icon img[src$="airdrop-mark.svg"] { filter: invert(1); }
+
+/* App icons orbit the integration copy without connector lines. */
+.nutrition-dashboard .nutrition-widget-integrations { display: grid; grid-template-columns: minmax(0, 1fr) 46%; align-items: center; gap: 12px; padding: 14px 16px; }
+.nutrition-dashboard .bento-integration-copy { padding: 0; }
+.nutrition-dashboard .bento-integration-copy h3 { max-width: 150px; font-size: 17px; line-height: 20px; }
+.nutrition-dashboard .bento-integration-copy p { display: block; margin: 7px 0 0; max-width: 190px; font-size: 10px; line-height: 14px; color: var(--muted); }
+.nutrition-dashboard .bento-integration-list { display: block; position: relative; width: 100%; height: 98px; margin: 0; }
+.nutrition-dashboard .bento-integration-list::before { content: none; }
+.nutrition-dashboard .bento-integration { position: absolute; width: 44px; height: 44px; }
+.nutrition-dashboard .bento-integration:nth-child(1) { left: 6%; top: 0; }
+.nutrition-dashboard .bento-integration:nth-child(2) { right: 2%; top: 12px; }
+.nutrition-dashboard .bento-integration:nth-child(3) { left: 0; bottom: 0; }
+.nutrition-dashboard .bento-integration:nth-child(4) { right: 12%; bottom: 0; }
+.nutrition-dashboard .bento-integration-icon { width: 44px; height: 44px; margin: 0; border-radius: 12px; overflow: hidden; background: var(--surface-inset); }
+.nutrition-dashboard .bento-integration-icon img { width: 34px; height: 34px; border-radius: 8px; object-fit: contain; }
+.nutrition-dashboard .bento-integration-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.nutrition-dashboard .bento-notification { transform-origin: center top; will-change: transform, opacity; }
+@media (max-width: 760px) {
+  .nutrition-dashboard .nutrition-widget-integrations { padding: 20px 18px; }
+  .nutrition-dashboard .bento-integration-list { height: 118px; }
+  .nutrition-dashboard .bento-integration, .nutrition-dashboard .bento-integration-icon { width: 48px; height: 48px; }
+  .nutrition-dashboard .bento-integration-icon img { width: 38px; height: 38px; }
+}
+
+.nutrition-dashboard .nutrition-widget-integrations { grid-template-columns: minmax(0, 1fr) 48%; gap: 10px; }
+.nutrition-dashboard .bento-integration-copy { position: relative; z-index: 2; }
+.nutrition-dashboard .bento-integration-copy p { white-space: nowrap; }
+.nutrition-dashboard .bento-integration-list { --app-size: 52px; --app-step: 58px; display: block; height: 110px; margin: 0; }
+.nutrition-dashboard .bento-integration:nth-child(n) { position: absolute; inset: auto; width: var(--app-size); height: var(--app-size); }
+.nutrition-dashboard .bento-integration:nth-child(1) { right: 76px; top: 0; }
+.nutrition-dashboard .bento-integration:nth-child(2) { right: 18px; top: 0; }
+.nutrition-dashboard .bento-integration:nth-child(3) { right: -40px; top: 0; }
+.nutrition-dashboard .bento-integration:nth-child(4) { right: 96px; top: var(--app-step); }
+.nutrition-dashboard .bento-integration:nth-child(5) { right: 38px; top: var(--app-step); }
+.nutrition-dashboard .bento-integration:nth-child(6) { right: -20px; top: var(--app-step); }
+.nutrition-dashboard .bento-integration-icon { flex: none; width: var(--app-size); height: var(--app-size); border-radius: 14px; box-shadow: 0 5px 12px #0002, inset 0 1px 0 #ffffff0d; }
+.nutrition-dashboard .bento-integration-icon-ai { background: #f4f1ec; }
+.nutrition-dashboard .bento-integration-icon img { flex: none; width: 38px; height: 38px; object-fit: contain; }
+.nutrition-note[hidden] { display: none !important; }
+/* Quiet depth and a more deliberate hierarchy for the three data cards. */
+.nutrition-dashboard :is(.nutrition-widget-month,.nutrition-widget-weight,.nutrition-widget-training) { background: linear-gradient(145deg, #ffffff06, transparent 65%), var(--surface); box-shadow: inset 0 1px 0 #ffffff0b; padding: 14px; }
+.nutrition-dashboard .widget-summary > strong { font-weight: 400; font-size: 28px; line-height: 30px; letter-spacing: -.055em; }
+.nutrition-dashboard .widget-summary > small { font-size: 9px; letter-spacing: .01em; }
+.nutrition-dashboard .widget-weight-chart { background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(33.33% - 1px), #88888814 calc(33.33% - 1px), #88888814 33.33%); }
+.nutrition-dashboard .widget-weight-chart path { stroke-width: 2.3; }
+.nutrition-dashboard .widget-month-grid { gap: 4px; }
+.nutrition-dashboard .widget-month-grid > [data-level] { border-radius: 3px; box-shadow: inset 0 1px 0 #ffffff0c; }
+.nutrition-dashboard .widget-month-grid > [data-level="3"] { background: #eeeeea; }
+[data-theme="light"] .nutrition-dashboard .widget-month-grid > [data-level="3"] { background: #30322f; }
+.nutrition-dashboard .widget-training-bar-track { border-radius: 7px; background: #8888880b; }
+.nutrition-dashboard .widget-training-bar { width: 100%; max-width: 32px; border-radius: 6px; box-shadow: inset 0 1px 0 #ffffff24; }
+.nutrition-dashboard .widget-training-week:last-child .widget-training-bar { background: var(--widget-bar); }
+@media (max-width: 760px) {
+ .nutrition-dashboard .widget-summary > strong { font-size: 26px; }
+ .nutrition-dashboard .nutrition-widget-month .widget-summary > strong { font-size: 14px; line-height: 20px; }
+}
+@media (max-width: 359px) {
+ .nutrition-dashboard .nutrition-widget-integrations { padding: 16px 12px; gap: 6px; }
+ .nutrition-dashboard .bento-integration-copy p { font-size: 9px; }
+}
+
+/* Consistent app tiles; SVG icons stay sharp inside neutral rounded squares. */
+.nutrition-dashboard .bento-integration-icon { background: #f5f4f1; }
+.nutrition-dashboard .bento-integration-icon img { width: 32px; height: 32px; }
+.nutrition-dashboard .nutrition-widget-weight { background: radial-gradient(ellipse at 90% 75%, #ffffff09, transparent 65%), var(--surface); }
+.nutrition-dashboard .widget-weight-chart { color: var(--widget-bar); overflow: visible; }
+.nutrition-dashboard .widget-weight-chart .weight-line { stroke: currentColor; stroke-width: 2.5; filter: drop-shadow(0 0 3px #ffffff70) drop-shadow(0 0 8px #ffffff30); }
+.nutrition-dashboard .widget-weight-chart .weight-area { fill: url(#weight-area); stroke: none; opacity: var(--weight-progress, 1); }
+.nutrition-dashboard .weight-halo { fill: currentColor; opacity: calc(var(--weight-progress, 1) * .12); }
+.nutrition-dashboard .weight-dot { fill: currentColor; opacity: var(--weight-progress, 1); filter: drop-shadow(0 0 4px #ffffffb0); }
+[data-theme="light"] .nutrition-dashboard .widget-weight-chart .weight-line { filter: drop-shadow(0 2px 3px #0002); }
+

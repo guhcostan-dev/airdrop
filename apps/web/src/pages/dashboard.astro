@@ -8,10 +8,10 @@ import { API } from "../utils/site";
   <div data-dash data-api={API}>
     <!-- Sign in -->
     <section class="mx-auto max-w-md" data-view="signin">
-      <div class="card border-white/12 bg-[#0B0E1A]/90">
+      <div class="card border-white/10 bg-[#171718]">
         <header>
-          <span class="mb-3 inline-flex size-9 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand"><KeyRound size={18} /></span>
-          <h1 class="text-xl font-semibold tracking-tight text-white">Sign in to your dashboard</h1>
+          <span class="mb-3 inline-flex size-9 items-center justify-center rounded-lg border border-white/12 bg-[#202021] text-brand"><KeyRound size={18} /></span>
+          <h1 class="text-xl font-medium tracking-tight text-[#f3f3f1]">Sign in to your dashboard</h1>
           <p>Use the app token from your onboarding email (the same one the CLI uses), or explore the interactive demo workspace.</p>
         </header>
         <section>
@@ -26,26 +26,26 @@ import { API } from "../utils/site";
             <button type="submit" class="btn">Sign in with token</button>
             <div class="relative my-1 flex items-center justify-center">
               <div class="h-px w-full bg-white/10"></div>
-              <span class="bg-[#0B0E1A] px-3 text-xs text-muted-foreground uppercase font-mono">or</span>
+              <span class="bg-[#171718] px-3 text-xs text-muted-foreground uppercase font-mono">or</span>
               <div class="h-px w-full bg-white/10"></div>
             </div>
             <button type="button" class="btn" data-variant="secondary" data-demo>
-              <Play class="size-4 text-cyan-400" /> Launch Interactive Demo Workspace
+              <Play class="size-4 text-brand" /> Launch Interactive Demo Workspace
             </button>
             <p class="text-sm text-bad" data-signin-error aria-live="polite"></p>
           </form>
         </section>
         <footer class="text-xs text-muted-foreground">
-          No token yet? <a href="/#access" class="ml-1 underline underline-offset-4">Request early access</a>
+          No token yet? <a href="/#contato" class="ml-1 underline underline-offset-4">Request early access</a>
         </footer>
       </div>
     </section>
 
     <!-- Dashboard -->
     <section class="hidden" data-view="app">
-      <div class="mb-6 hidden items-center justify-between gap-3 rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-3 text-xs sm:text-sm text-cyan-200" data-demo-banner>
-        <span><strong>Interactive Sandbox Mode:</strong> Exploring <code>Acme Commerce (Demo)</code>. Try changing rollout percentages, filtering channels, or rolling back releases below!</span>
-        <a href="/#access" class="btn shrink-0" data-size="sm">Get your real token</a>
+      <div class="mb-6 hidden items-center justify-between gap-3 rounded-xl border border-brand/25 bg-brand/10 px-4 py-3 text-xs sm:text-sm text-brand" data-demo-banner>
+        <span><strong>Sandbox interativo:</strong> Explorando <code>Acme Commerce (Demo)</code>. Teste rollouts, filtros ou rollbacks abaixo.</span>
+        <a href="/#contato" class="btn shrink-0" data-size="sm">Obter token real</a>
       </div>
 
       <div class="flex flex-wrap items-start justify-between gap-4">

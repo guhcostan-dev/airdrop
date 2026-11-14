@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1400" fill="none">
+  <g transform="translate(730, 740) rotate(-11) translate(-340, -560)">
+    <!-- Outer frame -->
+    <rect x="-12" y="-12" width="704" height="1324" rx="96" fill="#2a2b2e" stroke="#66676c" stroke-width="4"/>
+    <rect x="0" y="0" width="680" height="1300" rx="86" fill="#f7f7f5" stroke="#14141418" stroke-width="2"/>
+    <!-- Dynamic Island -->
+    <rect x="236" y="28" width="208" height="52" rx="26" fill="#0b0b0c"/>
+    <!-- Screen Content -->
+    <g transform="translate(44, 124)" font-family="-apple-system, BlinkMacSystemFont, sans-serif">
+      <text x="0" y="34" fill="#696965" font-size="22" font-weight="500">AIRDROP SDK · REACT NATIVE</text>
+      <text x="0" y="88" fill="#1a1a1a" font-size="44" font-weight="500" letter-spacing="-1">Atualização pronta</text>
+
+      <rect x="0" y="130" width="592" height="270" rx="36" fill="#ffffff" stroke="#14141414" stroke-width="2"/>
+      <text x="36" y="188" fill="#4e6b55" font-size="22" font-weight="500">● Canal production · v2.4.1</text>
+      <text x="36" y="242" fill="#1a1a1a" font-size="36" font-weight="500">Patch 180 KB aplicado</text>
+      <text x="36" y="286" fill="#696965" font-size="22">Assinatura Ed25519 verificada no enclave</text>
+      <rect x="36" y="326" width="520" height="10" rx="5" fill="#eeefec"/>
+      <rect x="36" y="326" width="520" height="10" rx="5" fill="#1a1a1a"/>
+
+      <rect x="0" y="428" width="592" height="210" rx="36" fill="#ffffff" stroke="#14141414" stroke-width="2"/>
+      <text x="36" y="484" fill="#696965" font-size="20">HEALTH GATE AUTOMÁTICO</text>
+      <text x="36" y="540" fill="#1a1a1a" font-size="42" font-weight="500">99,98% <tspan font-size="22" fill="#696965" font-weight="400">crash-free</tspan></text>
+      <text x="36" y="586" fill="#696965" font-size="20">Snapshot anterior v2.4.0 preservado para rollback</text>
+    </g>
+  </g>
+</svg>

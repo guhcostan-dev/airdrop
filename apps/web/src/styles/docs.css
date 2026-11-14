@@ -1,13 +1,22 @@
-/* Docs (Starlight) share the landing's type and accent: Geist, self-hosted via Fontsource. */
+/* Docs (Starlight) share the monochrome + mint palette and system/Geist typography. */
 :root {
-  --sl-font: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sl-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --sl-font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --sl-color-accent-low: #1e1a3d;
-  --sl-color-accent: #7c5cff;
-  --sl-color-accent-high: #c9bfff;
+  --sl-color-bg: #0b0b0c;
+  --sl-color-bg-nav: #0b0b0c;
+  --sl-color-bg-sidebar: #111112;
+  --sl-color-hairline-light: #ffffff14;
+  --sl-color-accent-low: #b8cdbb18;
+  --sl-color-accent: #b8cdbb;
+  --sl-color-accent-high: #f3f3f1;
 }
+
 :root[data-theme="light"] {
-  --sl-color-accent-low: #e6e0ff;
-  --sl-color-accent: #5b3df5;
-  --sl-color-accent-high: #2a1a8a;
+  --sl-color-bg: #ffffff;
+  --sl-color-bg-nav: #ffffff;
+  --sl-color-bg-sidebar: #f5f5f2;
+  --sl-color-hairline-light: #14141414;
+  --sl-color-accent-low: #4e6b5518;
+  --sl-color-accent: #4e6b55;
+  --sl-color-accent-high: #1a1a1a;
 }

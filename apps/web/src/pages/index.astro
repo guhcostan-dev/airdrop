@@ -1,534 +1,366 @@
 ---
-import "../styles/landing.css";
-import "../styles/pumpy-airdrop.css";
-import { PumpyStoryAndBento } from "../components/interactive/PumpyStoryAndBento";
-import { InteractiveOtaPlayground } from "../components/interactive/InteractiveOtaPlayground";
-import { CompetitorMatrix } from "../components/interactive/CompetitorMatrix";
-import { IntegrationCodeTabs } from "../components/interactive/IntegrationCodeTabs";
 import { API, GITHUB } from "../utils/site";
 
 const title = "Airdrop — Sua release. Uma conversa.";
 const description =
-  "Atualizações Over-the-Air (OTA) Zero-Trust para React Native. Assinatura ECDSA P-256, rollout canário e auto-rollback nativo em um único comando.";
+  "Atualizações Over-the-Air para React Native. Assinatura criptográfica, rollout canário e rollback automático na sua AWS e Cloudflare.";
 ---
 
 <!doctype html>
-<html lang="pt-BR" data-theme="dark" class="dark">
+<html lang="pt-BR" data-theme="dark">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0b0b0c" />
-    <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href="https://airdrop.guhcostan.dev/" />
-    <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content="Bytecode Hermes, assinatura Ed25519 e rollout canário para React Native." />
+    <meta property="og:type" content="website" />
     <meta property="og:url" content="https://airdrop.guhcostan.dev/" />
+    <meta property="og:site_name" content="Airdrop" />
+    <meta property="og:locale" content="pt_BR" />
     <meta property="og:image" content="https://airdrop.guhcostan.dev/og.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content="https://airdrop.guhcostan.dev/og.png" />
+    <link rel="canonical" href="https://airdrop.guhcostan.dev/" />
+    <title>{title}</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline src="/pumpy/theme-init.js"></script>
+    <link rel="stylesheet" href="/pumpy/styles.css" />
+    <link rel="stylesheet" href="/pumpy/nutrition-sun.css" />
+    <link rel="stylesheet" href="/pumpy/nutrition-widgets.css" />
+    <script is:inline src="/pumpy/character.js" defer></script>
+    <script is:inline src="/pumpy/header.js" defer></script>
+    <script is:inline src="/pumpy/beta.js" defer></script>
+    <script is:inline src="/pumpy/scroll.js" defer></script>
+    <script is:inline src="/pumpy/story.js" defer></script>
+    <script is:inline src="/pumpy/nutrition-sun.js" defer></script>
+    <script is:inline src="/pumpy/nutrition-story.js" defer></script>
   </head>
+  <body>
+    <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6" /></symbol>
+      <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+      <symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6" /></symbol>
+      <symbol id="menu" viewBox="0 0 24 24"><path d="M4 8h16M4 16h16" /></symbol>
+      <symbol id="close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6" /></symbol>
+    </svg>
 
-  <body class="pumpy-body">
-    <!-- STICKY HEADER -> GATHERS INTO FLOATING GLASS CAPSULE ON SCROLL -->
-    <header class="pumpy-header" id="site-header" data-nav-style="capsule">
-      <div class="pumpy-header-inner">
-        <a class="pumpy-header-logo" href="/" aria-label="Airdrop Home">
-          <svg width="32" height="32" viewBox="0 0 120 120" aria-hidden="true">
-            <path
-              d="M22 46 C22 20, 98 20, 98 46 C98 52, 91 55, 84 53 C76 51, 68 51, 60 53 C52 51, 44 51, 36 53 C29 55, 22 52, 22 46 Z"
-              fill="var(--pumpy-body)"
-            />
-            <line x1="33" y1="50" x2="42" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
-            <line x1="87" y1="50" x2="78" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
-            <rect x="26" y="56" width="68" height="50" rx="25" fill="var(--pumpy-body)" />
-            <ellipse cx="47" cy="80" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
-            <ellipse cx="73" cy="80" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
-          </svg>
-          <span>Airdrop</span>
+    <header class="header">
+      <div class="header-inner">
+        <a class="header-logo" href="/" aria-label="Início do Airdrop">
+          <img class="brand-mark" src="/pumpy/assets/airdrop-mark.svg" width="44" height="44" alt="Símbolo do Airdrop" />
         </a>
-
-        <nav class="pumpy-nav" aria-label="Navegação principal">
+        <nav class="desktop-nav" aria-label="Navegação principal">
           <a href="#demonstracao">Como funciona</a>
-          <a href="#telemetria">Telemetria</a>
+          <a href="#inspecao">Inspeção</a>
           <a href="#recursos">Recursos</a>
-          <a href="#playground">Playground</a>
-          <a href="#comparativo">Custos</a>
           <a href="/docs/getting-started/">Docs</a>
           <a href="/dashboard/">Console</a>
         </nav>
-
-        <div class="pumpy-header-actions">
-          <button
-            type="button"
-            class="pumpy-icon-btn"
-            id="theme-toggle"
-            aria-label="Alternar tema claro/escuro"
-            title="Alternar tema"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
-            </svg>
+        <div class="header-actions">
+          <button class="menu-toggle icon-button" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-nav">
+            <svg class="icon"><use href="#menu" /></svg>
           </button>
-          <a href="/dashboard/" class="pumpy-button pumpy-button-small">
-            Abrir Console <span aria-hidden="true">↗</span>
-          </a>
         </div>
       </div>
+      <nav class="mobile-nav" id="mobile-nav" aria-label="Navegação móvel" hidden>
+        <a href="#demonstracao">Como funciona</a>
+        <a href="#inspecao">Inspeção</a>
+        <a href="#recursos">Recursos</a>
+        <a href="/docs/getting-started/">Docs</a>
+        <a href="/dashboard/">Console</a>
+      </nav>
     </header>
 
     <main id="main">
-      <!-- HERO SECTION WITH LIVING MASCOT INSIDE H1 (PUMPY SIGNATURE) -->
-      <section class="pumpy-hero" aria-labelledby="hero-title">
-        <div class="pumpy-container">
-          <a href="#demonstracao" class="pumpy-announcement">
-            <span class="pumpy-status-dot"></span>
-            <span>React Native 0.71 → 0.87+ · AWS S3 + Cloudflare Edge</span>
-            <span class="pumpy-pill-arrow" aria-hidden="true">→</span>
-          </a>
-
-          <h1 id="hero-title" class="pumpy-hero-h1" aria-label="Conheça Airdrop">
-            <span class="pumpy-hero-word">Conheça</span>
-            <button
-              class="pumpy-mascot-btn"
-              id="hero-mascot-btn"
-              type="button"
-              aria-label="Cumprimentar o Airdrop"
-              title="Dê um oi ao Airdrop"
-            >
-              <svg viewBox="0 0 120 120" width="100%" height="100%" style="overflow: visible; display: block;">
-                <g id="hero-mascot-group">
-                  <path
-                    d="M22 46 C22 20, 98 20, 98 46 C98 52, 91 55, 84 53 C76 51, 68 51, 60 53 C52 51, 44 51, 36 53 C29 55, 22 52, 22 46 Z"
-                    fill="var(--pumpy-body)"
-                  />
-                  <line x1="33" y1="50" x2="42" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
-                  <line x1="87" y1="50" x2="78" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
-                  <rect x="26" y="56" width="68" height="50" rx="25" fill="var(--pumpy-body)" />
-                  <g id="hero-mascot-eyes">
-                    <ellipse id="hero-eye-left" cx="47" cy="80" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
-                    <ellipse id="hero-eye-right" cx="73" cy="80" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
-                  </g>
-                </g>
-              </svg>
-            </button>
-            <span class="pumpy-hero-word">Airdrop</span>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-content">
+          <h1 id="hero-title" aria-label="Conheça Airdrop">
+            <span class="hero-title-word">Conheça</span>
+            <button class="hero-mascot pumpy-live" type="button" aria-label="Cumprimentar o Airdrop" title="Dê um oi ao Airdrop"></button>
+            <span class="hero-title-word">Airdrop</span>
           </h1>
-
-          <p class="pumpy-hero-description">
-            Seu parceiro de releases Over-the-Air para React Native.<br />
-            No iOS e no Android. Em um único comando.
+          <p class="hero-description">
+            Seu sistema de updates OTA para React Native.<br class="desktop-break" /> No iOS e no Android. Na sua infra.
           </p>
-
-          <!-- Pumpy-style Beta / Early Access Input Row -->
-          <form class="pumpy-beta-form" data-waitlist-form aria-label="Receber token de acesso do Airdrop">
-            <label class="pumpy-beta-label" for="hero-email">
-              <span>Receba seu token de produção ou faça self-host agora</span>
-              <span style="font-size: 11px; color: var(--mint);">Grátis até 10k MAU · MIT</span>
-            </label>
-            <div class="pumpy-beta-row">
-              <input
-                id="hero-email"
-                name="email"
-                type="email"
-                autocomplete="email"
-                placeholder="Seu melhor e-mail de engenharia"
-                maxlength="254"
-                required
-              />
-              <button class="pumpy-button" type="submit">
-                Quero começar <span aria-hidden="true">↗</span>
-              </button>
+          <form method="post" action={`${API}/v1/waitlist`} class="beta-form" data-beta-form data-api={API} aria-label="Solicitar acesso ao Airdrop">
+            <label class="beta-label" for="hero-email">Receba seu token de acesso</label>
+            <div class="beta-input-row">
+              <input id="hero-email" name="email" type="email" autocomplete="email" placeholder="Seu melhor e-mail" maxlength="254" required />
+              <button class="button" type="submit">Quero começar <span aria-hidden="true">↗</span></button>
             </div>
-            <div style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);" aria-hidden="true">
-              <input name="company" type="text" tabindex="-1" autocomplete="off" />
-            </div>
-            <p class="waitlist-status" style="font-size: 12px; margin-top: 10px; color: var(--mint); display: none;"></p>
+            <div class="beta-trap" aria-hidden="true"><label>Website<input name="company" type="text" tabindex="-1" autocomplete="off" /></label></div>
+            <p class="beta-status" role="status" aria-live="polite"></p>
+            <noscript>Ative o JavaScript para enviar sua inscrição com segurança.</noscript>
           </form>
+        </div>
+      </section>
 
-          <div>
-            <button
-              type="button"
-              class="pumpy-cli-pill"
-              id="copy-hero-cli"
-              title="Copiar comando CLI"
-            >
-              <span style="color: var(--mint);">$</span>
-              <span>npx react-native-airdrop-cli release --platform ios --rollout 20 --sign</span>
-              <span id="copy-hero-cli-badge" style="font-size: 10px; color: var(--muted); margin-left: 4px;">copiar</span>
-            </button>
+      <section class="scroll-story" id="demonstracao" aria-label="Um deploy com o Airdrop">
+        <div class="story-stage">
+          <div class="story-canvas">
+            <div class="story-request">
+              <p class="story-request-text">Publica esse hotfix do checkout em 20% da produção.</p>
+              <div class="story-composer-tools">
+                <span class="story-add" aria-hidden="true"><svg class="icon"><use href="#plus" /></svg></span>
+                <span class="story-composer-caption">airdrop release</span>
+                <button class="story-send" type="button" aria-label="Ver o envio do comando de exemplo"><svg class="icon"><use href="#arrow" /></svg></button>
+              </div>
+            </div>
+            <div class="story-thinking" aria-hidden="true"><span class="story-dot-anchor"></span><span class="story-thinking-label">Compilando<span>…</span></span></div>
+            <article class="story-answer" aria-label="Resposta do Airdrop com o pipeline de publicação OTA">
+              <div class="story-answer-intro"><p>Pronto! O patch já foi compilado, assinado e entregue ao canal production.</p></div>
+              <div class="story-workout">
+                <div class="story-workout-heading"><p>6 etapas <span>·</span> 4,2s <span>·</span> AWS S3 + Cloudflare Edge</p></div>
+                <ol class="story-exercises">
+                  <li><span class="story-exercise-number">01</span><div><strong>Metro + Hermes .hbc</strong><span>Bytecode pré-compilado iOS e Android</span></div><p>1,64 MB<small>base completa</small></p></li>
+                  <li><span class="story-exercise-number">02</span><div><strong>Deduplicação por SHA-256</strong><span>Somente os chunks alterados sobem</span></div><p>180 KB<small>delta comprimido</small></p></li>
+                  <li><span class="story-exercise-number">03</span><div><strong>Assinatura ECDSA P-256</strong><span>Envelope canônico assinado na sua CI</span></div><p>Local<small>chave nunca sai</small></p></li>
+                  <li><span class="story-exercise-number">04</span><div><strong>Storage em AWS S3</strong><span>Artefatos imutáveis na região us-east-2</span></div><p>us-east-2<small>zero lock-in</small></p></li>
+                  <li><span class="story-exercise-number">05</span><div><strong>Propagação Cloudflare Edge</strong><span>Distribuição global sem taxa por egresso</span></div><p>38 ms<small>latência p50</small></p></li>
+                  <li><span class="story-exercise-number">06</span><div><strong>Canário + Crash Watchdog</strong><span>Rollback nativo automático em 2 boots</span></div><p>20%<small>production</small></p></li>
+                </ol>
+                <p class="story-workout-note">O SDK nativo verifica a assinatura antes do boot e reverte sozinho se o JS falhar.</p>
+              </div>
+            </article>
+          </div>
+          <div class="story-footer" hidden aria-hidden="true">
+            <p class="story-scroll-hint"></p>
           </div>
         </div>
       </section>
 
-      <!-- PUMPY CONVERSATIONAL STORY + RADIAL SUNBURST + 12-COLUMN BENTO GRID -->
-      <PumpyStoryAndBento client:load />
-
-      <!-- INTERACTIVE 4-TAB OTA SIMULATOR PLAYGROUND -->
-      <section id="playground" style="padding: 110px 0 30px;">
-        <div class="pumpy-container">
-          <p class="pumpy-story-eyebrow">SIMULADOR INTERATIVO</p>
-          <h2 class="pumpy-story-h2" style="margin-bottom: 14px;">
-            Teste cada garantia antes de instalar o SDK.
-          </h2>
-          <p style="text-align: center; color: var(--muted); font-size: 14px; max-width: 560px; margin: 0 auto 40px;">
-            Simule um hotfix em bytecode Hermes, ajuste a régua de rollout canário, dispare um crash para ver o watchdog reverter sozinho ou tente adulterar 1 byte da assinatura ECDSA P-256.
-          </p>
-          <InteractiveOtaPlayground client:visible />
-        </div>
-      </section>
-
-      <!-- INTERACTIVE MAU CALCULATOR & COMPETITOR MATRIX -->
-      <section id="comparativo" style="padding: 110px 0 30px;">
-        <div class="pumpy-container">
-          <p class="pumpy-story-eyebrow">ECONOMIA &amp; BENCHMARK 2026</p>
-          <h2 class="pumpy-story-h2" style="margin-bottom: 14px;">
-            Zero imposto por MAU. Infraestrutura na sua conta.
-          </h2>
-          <p style="text-align: center; color: var(--muted); font-size: 14px; max-width: 560px; margin: 0 auto 40px;">
-            Compare o custo mensal real na sua AWS + Cloudflare contra EAS Update, Stallion, Revopush e o antigo CodePush.
-          </p>
-          <CompetitorMatrix client:visible />
-        </div>
-      </section>
-
-      <!-- INTEGRATION CODE TABS -->
-      <section id="integracao" style="padding: 110px 0 30px;">
-        <div class="pumpy-container">
-          <p class="pumpy-story-eyebrow">INTEGRAÇÃO EM 5 MINUTOS</p>
-          <h2 class="pumpy-story-h2" style="margin-bottom: 14px;">
-            Bare React Native ou Expo. Cinco linhas de código.
-          </h2>
-          <p style="text-align: center; color: var(--muted); font-size: 14px; max-width: 560px; margin: 0 auto 40px;">
-            Debug continua usando o Metro normalmente. Em builds de release, o SDK nativo verifica e carrega o bundle assinado.
-          </p>
-          <IntegrationCodeTabs client:visible />
-        </div>
-      </section>
-
-      <!-- PUMPY 2-COLUMN MINIMALIST FAQ SECTION -->
-      <section class="pumpy-container">
-        <div class="pumpy-faq-section" id="faq">
-          <div>
-            <p class="pumpy-story-eyebrow" style="text-align: left;">PERGUNTAS FREQUENTES</p>
-            <h2
-              style="
-                font-size: clamp(30px, 3.4vw, 42px);
-                line-height: 1.12;
-                font-weight: 300;
-                letter-spacing: -0.048em;
-                margin-top: 14px;
-              "
-            >
-              Tudo sobre segurança, Apple &amp; Google e self-hosting.
-            </h2>
-            <p style="color: var(--muted); font-size: 13px; line-height: 1.75; margin-top: 16px;">
-              Precisa de detalhes do protocolo HTTP ou da assinatura canônica?
-            </p>
-            <a
-              href="/docs/getting-started/"
-              style="
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-                margin-top: 20px;
-                font-size: 13px;
-                color: var(--text);
-                text-decoration: underline;
-                text-underline-offset: 4px;
-              "
-            >
-              Ler a documentação completa →
-            </a>
+      <section class="nutrition-story" id="inspecao" aria-label="Inspecionar e publicar uma release com o Airdrop">
+        <div class="nutrition-stage">
+          <div class="nutrition-canvas">
+            <span class="nutrition-dock" aria-hidden="true"></span>
+            <div class="nutrition-composer">
+              <figure class="nutrition-photo">
+                <img src="/pumpy/assets/release-artifact.svg" width="900" height="900" loading="lazy" decoding="async" alt="Inspeção de diff binário Hermes bytecode v2.4.1">
+                <span class="nutrition-scan" aria-hidden="true"></span>
+                <span class="nutrition-pin nutrition-pin-chicken" aria-hidden="true">Hermes .hbc</span>
+                <span class="nutrition-pin nutrition-pin-rice" aria-hidden="true">SHA-256 ok</span>
+                <span class="nutrition-pin nutrition-pin-beans" aria-hidden="true">Ed25519</span>
+                <figcaption class="nutrition-photo-result"><span>Hotfix v2.4.1</span><strong>180 <small>KB</small></strong><span>Verificado antes do upload</span></figcaption>
+              </figure>
+              <div class="nutrition-question"><p>Airdrop, libera para 20%?</p><button class="nutrition-send" type="button" aria-label="Ver análise do pacote de exemplo"><svg class="icon"><use href="#arrow" /></svg></button></div>
+            </div>
+            <div class="nutrition-analysis" aria-label="Métricas do pacote">
+              <dl class="nutrition-macros"><div><dt>Rollout</dt><dd>20<span> %</span></dd></div><div><dt>Latência</dt><dd>38<span> ms</span></dd></div><div><dt>Estável</dt><dd>99,9<span> %</span></dd></div></dl>
+              <button class="nutrition-save" type="button">Aplicar no canal <svg class="icon"><use href="#arrow" /></svg></button>
+            </div>
+            <article class="nutrition-receipt" aria-label="Exemplo de release publicada no canal">
+              <div class="nutrition-diary-heading"><span>Hoje</span><p><svg class="icon"><use href="#check" /></svg> Release publicada</p></div>
+              <div class="nutrition-saved-meal"><div class="nutrition-thumb-space" aria-hidden="true"></div><div><strong>v2.4.1 · Checkout</strong><span>12:30 · Hermes HBC, zstd e ECDSA P-256</span></div><p>180<small>KB</small></p></div>
+              <div class="nutrition-daily"><span>Dispositivos atualizados</span><p><strong class="nutrition-total">1.280</strong><span> ativos</span></p></div>
+              <div class="nutrition-progress" aria-hidden="true"><span></span></div>
+              <p class="nutrition-goal">de 2.000 dispositivos</p>
+            </article>
+            <svg class="nutrition-track" aria-hidden="true" focusable="false"><path fill="none" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            <article class="nutrition-overview" aria-label="Resumo ilustrativo do rollout: 1.280 de 2.000 dispositivos, 96% Hermes HBC, 99,8% crash-free, 94% cache hit e 38 ms de latência">
+              <p class="nutrition-overview-heading">Hoje</p>
+              <div class="nutrition-sun">
+                <svg class="nutrition-sun-visual" viewBox="0 0 240 240" aria-hidden="true"></svg>
+                <div class="nutrition-sun-center"><strong>1.280</strong><span>de 2.000 ativos</span></div>
+              </div>
+              <div class="nutrition-sun-metrics">
+                <button type="button" data-sun-macro="0"><span class="nutrition-sun-metric-label"><span class="sun-metric-full">Hermes</span><span class="sun-metric-short" aria-hidden="true">HBC</span></span><span class="nutrition-sun-metric-value"><strong>96</strong><small>/ 100%</small></span></button>
+                <button type="button" data-sun-macro="1"><span class="nutrition-sun-metric-label"><span class="sun-metric-full">Estável</span><span class="sun-metric-short" aria-hidden="true">Est.</span></span><span class="nutrition-sun-metric-value"><strong>99,8</strong><small>/ 100%</small></span></button>
+                <button type="button" data-sun-macro="2"><span class="nutrition-sun-metric-label"><span class="sun-metric-full">Cache</span><span class="sun-metric-short" aria-hidden="true">CDN</span></span><span class="nutrition-sun-metric-value"><strong>94</strong><small>/ 100%</small></span></button>
+                <div aria-label="Latência: 38 milissegundos"><span class="nutrition-sun-metric-label"><span class="sun-metric-full">Latência</span><span class="sun-metric-short" aria-hidden="true">Edge</span></span><span class="nutrition-sun-metric-value"><strong>38</strong><small> ms</small></span></div>
+              </div>
+            </article>
+            <p class="nutrition-note" hidden aria-hidden="true"></p>
           </div>
 
-          <div class="pumpy-faq-list">
-            <details open>
-              <summary>
-                <span>Isso é permitido pelas diretrizes da App Store e Google Play?</span>
-                <svg class="pumpy-faq-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+          <div class="nutrition-dashboard" id="recursos" role="group" aria-label="Telemetria do Airdrop: rollout, consistência, tamanho do bundle, deploys, notificações e integrações">
+            <div class="nutrition-widget-shell bento-calories" data-bento-beat="0">
+              <h3 class="nutrition-widget-title">Telemetria</h3>
+              <article class="nutrition-widget nutrition-widget-nutrition" aria-label="Painel mobile do Airdrop em um iPhone">
+                <div class="bento-diet-device">
+                  <span class="bento-diet-lock" aria-hidden="true"></span>
+                  <div class="bento-diet-screen">
+                    <img src="/pumpy/assets/airdrop-diet-screen.svg" alt="Painel do Airdrop com telemetria do rollout e releases recentes" width="720" height="1564" loading="lazy" decoding="async" />
+                    <span class="bento-diet-island" aria-hidden="true"></span>
+                    <div class="bento-diet-chart-mask" aria-hidden="true"></div>
+                    <div class="widget-sun-slot"></div>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="nutrition-widget-shell bento-activity" data-bento-beat="1">
+              <h3 class="nutrition-widget-title">Estabilidade</h3>
+              <article class="nutrition-widget nutrition-widget-month" aria-label="Estabilidade em novembro: 26 dias sem rollback em 30 dias">
+                <div class="widget-summary"><strong>26 dias limpos</strong><small>Novembro</small></div>
+                <ol class="widget-month-grid" aria-label="Novembro de 2026: frequência diária de deploys sem rollback">
+                  <li class="widget-month-day" data-level="2" title="1 nov: deploy canário"></li>
+                  <li class="widget-month-day" data-level="3" title="2 nov: promoção para produção"></li>
+                  <li class="widget-month-day" data-level="0" title="3 nov: sem deploy"></li>
+                  <li class="widget-month-day" data-level="1" title="4 nov: staging"></li>
+                  <li class="widget-month-day" data-level="2" title="5 nov: deploy canário"></li>
+                  <li class="widget-month-day" data-level="3" title="6 nov: promoção 100%"></li>
+                  <li class="widget-month-day" data-level="0" title="7 nov: sem deploy"></li>
+                  <li class="widget-month-day" data-level="1" title="8 nov: staging"></li>
+                  <li class="widget-month-day" data-level="2" title="9 nov: deploy canário"></li>
+                  <li class="widget-month-day" data-level="0" title="10 nov: sem deploy"></li>
+                  <li class="widget-month-day" data-level="3" title="11 nov: hotfix imediato"></li>
+                  <li class="widget-month-day" data-level="2" title="12 nov: deploy canário"></li>
+                  <li class="widget-month-day" data-level="1" title="13 nov: staging"></li>
+                  <li class="widget-month-day" data-level="0" title="14 nov: sem deploy"></li>
+                  <li class="widget-month-day" data-level="2" title="15 nov: deploy canário"></li>
+                  <li class="widget-month-day" data-level="3" title="16 nov: promoção 100%"></li>
+                  <li class="widget-month-day" data-level="0" title="17 nov: sem deploy"></li>
+                  <li class="widget-month-day" data-level="1" title="18 nov: staging"></li>
+                  <li class="widget-month-day" data-level="2" title="19 nov: deploy canário"></li>
+                  <li class="widget-month-day" data-level="3" title="20 nov: promoção 100%"></li>
+                  <li class="widget-month-day" data-level="0" title="21 nov: sem deploy"></li>
+                  <li class="widget-month-day" data-level="1" title="22 nov: staging"></li>
+                  <li class="widget-month-day" data-level="2" title="23 nov: deploy canário"></li>
+                  <li class="widget-month-day" data-level="0" title="24 nov: sem deploy"></li>
+                  <li class="widget-month-day" data-level="3" title="25 nov: hotfix imediato"></li>
+                  <li class="widget-month-day" data-level="2" title="26 nov: deploy canário"></li>
+                  <li class="widget-month-day" data-level="1" title="27 nov: staging"></li>
+                  <li class="widget-month-day" data-level="0" title="28 nov: sem deploy"></li>
+                  <li class="widget-month-day" data-level="2" title="29 nov: deploy canário"></li>
+                  <li class="widget-month-day" data-level="3" title="30 nov: promoção 100%"></li>
+                </ol>
+              </article>
+            </div>
+
+            <div class="nutrition-widget-shell bento-weight" data-bento-beat="2">
+              <h3 class="nutrition-widget-title">Payload</h3>
+              <article class="nutrition-widget nutrition-widget-weight" aria-label="Evolução do tamanho de download: de 1,64 MB para 180 KB">
+                <div class="widget-summary"><strong>180 <span>KB</span></strong><small>−89% com diff SHA-256</small></div>
+                <svg class="widget-weight-chart" viewBox="0 0 280 100" preserveAspectRatio="none" role="img" aria-labelledby="widget-weight-chart-title" aria-describedby="widget-weight-chart-description" focusable="false">
+                  <title id="widget-weight-chart-title">Tamanho do pacote OTA de v2.1 a v2.4</title>
+                  <desc id="widget-weight-chart-description">Queda de 1,64 MB para 180 KB por delta binário conteúdo-endereçado.</desc>
+                  <defs>
+                    <linearGradient id="weight-area" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="currentColor" stop-opacity=".22" />
+                      <stop offset="100%" stop-color="currentColor" stop-opacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path class="weight-area" d="M4 12 C20 12 22 24 40 22 S60 36 78 34 S100 39 114 44 S136 55 152 53 S173 67 192 64 S217 76 234 76 S260 88 276 88 L276 100 L4 100 Z" />
+                  <path class="weight-line" d="M4 12 C20 12 22 24 40 22 S60 36 78 34 S100 39 114 44 S136 55 152 53 S173 67 192 64 S217 76 234 76 S260 88 276 88" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+                  <circle class="weight-halo" cx="276" cy="88" r="10" /><circle class="weight-dot" cx="276" cy="88" r="3.5" />
                 </svg>
-              </summary>
-              <p>
-                Sim. A seção 3.3.2 do Apple Developer Program e as políticas do Google Play permitem atualizações Over-the-Air de código interpretado (JavaScript/Hermes bytecode e assets) desde que não alterem a finalidade principal do aplicativo nem baixem código nativo compilado (Swift/Obj-C/Kotlin).
-              </p>
-            </details>
-            <details>
-              <summary>
-                <span>O que acontece se eu publicar um bundle JS com erro fatal na inicialização?</span>
-                <svg class="pumpy-faq-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M12 5v14M5 12h14" stroke-linecap="round" />
-                </svg>
-              </summary>
-              <p>
-                Novas atualizações entram como <code>pendingUpdateId</code>. Antes de executar o novo bundle, o código nativo incrementa um contador de boot no disco. Se o app sofrer crash antes do JS chamar <code>Airdrop.notifyAppReady()</code>, na abertura seguinte o SDK reverte automaticamente para o bundle anterior funcional e adiciona o ID defeituoso em <code>failedUpdateIds</code>.
-              </p>
-            </details>
-            <details>
-              <summary>
-                <span>Mesmo se meu servidor ou CDN for comprometido, um invasor pode injetar JS?</span>
-                <svg class="pumpy-faq-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M12 5v14M5 12h14" stroke-linecap="round" />
-                </svg>
-              </summary>
-              <p>
-                Não quando a assinatura de código está ativa (<code>airdrop init --sign</code>). Sua chave privada ECDSA P-256 nunca sai da sua máquina ou do GitHub Actions. Os módulos nativos validam a assinatura criptográfica contra a chave pública gravada no <code>Info.plist</code> e <code>strings.xml</code> antes de ativar qualquer arquivo.
-              </p>
-            </details>
-            <details>
-              <summary>
-                <span>Funciona com Bare React Native e Nova Arquitetura (Fabric / TurboModules)?</span>
-                <svg class="pumpy-faq-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M12 5v14M5 12h14" stroke-linecap="round" />
-                </svg>
-              </summary>
-              <p>
-                Sim! Suporta React Native 0.71 até 0.87+, Antiga e Nova Arquitetura, Hermes (bytecode <code>.hbc</code>) e JSC, tanto em projetos Bare React Native quanto com Expo (via config plugin <code>"react-native-airdrop/expo"</code>).
-              </p>
-            </details>
-            <details>
-              <summary>
-                <span>Como funciona o deploy na minha própria AWS e Cloudflare?</span>
-                <svg class="pumpy-faq-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M12 5v14M5 12h14" stroke-linecap="round" />
-                </svg>
-              </summary>
-              <p>
-                O repositório inclui <code>bash scripts/deploy-aws.sh</code> para provisionar S3 + CloudFront + AWS Lambda Function URL em <code>us-east-2</code> e configuração pronta do Wrangler para Cloudflare Workers + D1 + R2 no seu próprio domínio.
-              </p>
-            </details>
+                <div class="widget-chart-endpoints" aria-hidden="true"><span>v2.1</span><span>v2.4</span></div>
+              </article>
+            </div>
+
+            <div class="nutrition-widget-shell bento-training" data-bento-beat="2">
+              <h3 class="nutrition-widget-title">Deploys</h3>
+              <article class="nutrition-widget nutrition-widget-training" aria-label="18 deploys em quatro semanas">
+                <div class="widget-summary"><strong>18 <span>deploys</span></strong><small>sem review na loja</small></div>
+                <div class="widget-training-bars" role="img" aria-label="18 deploys em quatro semanas">
+                  <div class="widget-training-week" aria-hidden="true"><span class="widget-training-bar-track"><span class="widget-training-bar" style="--bar-height: 50%"></span></span><span class="widget-training-label">S1</span></div>
+                  <div class="widget-training-week" aria-hidden="true"><span class="widget-training-bar-track"><span class="widget-training-bar" style="--bar-height: 75%"></span></span><span class="widget-training-label">S2</span></div>
+                  <div class="widget-training-week" aria-hidden="true"><span class="widget-training-bar-track"><span class="widget-training-bar" style="--bar-height: 75%"></span></span><span class="widget-training-label">S3</span></div>
+                  <div class="widget-training-week" aria-hidden="true"><span class="widget-training-bar-track"><span class="widget-training-bar" style="--bar-height: 100%"></span></span><span class="widget-training-label">S4</span></div>
+                </div>
+              </article>
+            </div>
+
+            <div class="nutrition-widget-shell bento-phone" data-bento-beat="1">
+              <h3 class="nutrition-widget-title">No aparelho.</h3>
+              <article class="nutrition-widget nutrition-widget-phone" aria-label="Airdrop no iOS e Android com verificação de assinatura e health gate">
+                <div class="bento-device-crop">
+                  <div class="bento-device">
+                    <img class="bento-phone-image bento-phone-image-light" src="/pumpy/assets/airdrop-phone-light.svg" alt="Airdrop em um iPhone mostrando atualização verificada no tema claro" width="1400" height="1400" loading="lazy" decoding="async" />
+                    <img class="bento-phone-image bento-phone-image-dark" src="/pumpy/assets/airdrop-phone-dark.svg" alt="Airdrop em um iPhone mostrando atualização verificada no tema escuro" width="1400" height="1400" loading="lazy" decoding="async" />
+                  </div>
+                </div>
+                <div class="bento-notification-stack">
+                  <div class="bento-notification">
+                    <img src="/pumpy/assets/airdrop-app-icon.svg" alt="" width="28" height="28" />
+                    <div><div class="bento-notification-meta"><span>Airdrop</span><small>agora</small></div><strong>Patch v2.4.1 aplicado.</strong><p>Assinatura Ed25519 verificada antes do boot.</p></div>
+                  </div>
+                  <div class="bento-notification">
+                    <img src="/pumpy/assets/airdrop-app-icon.svg" alt="" width="28" height="28" />
+                    <div><div class="bento-notification-meta"><span>Airdrop</span><small>agora</small></div><strong>Watchdog confirmou saúde.</strong><p>99,98% crash-free no canal production.</p></div>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="nutrition-widget-shell bento-integrations" data-bento-beat="3">
+              <article class="nutrition-widget nutrition-widget-integrations" aria-label="Integrações: React Native, Expo, Hermes, Cloudflare, AWS e GitHub Actions">
+                <div class="bento-integration-copy"><h3>Sua stack, conectada.</h3><p>Bare React Native ou Expo.<br />Roda na sua conta.</p></div>
+                <div class="bento-integration-list">
+                  <div class="bento-integration"><span class="bento-integration-icon"><img src="/pumpy/assets/react-native.svg" alt="" width="32" height="32" loading="lazy" /></span><span class="bento-integration-name">React Native</span></div>
+                  <div class="bento-integration"><span class="bento-integration-icon"><img src="/pumpy/assets/expo.svg" alt="" width="32" height="32" loading="lazy" /></span><span class="bento-integration-name">Expo</span></div>
+                  <div class="bento-integration"><span class="bento-integration-icon"><img src="/pumpy/assets/hermes.svg" alt="" width="32" height="32" loading="lazy" /></span><span class="bento-integration-name">Hermes</span></div>
+                  <div class="bento-integration"><span class="bento-integration-icon"><img src="/pumpy/assets/cloudflare.svg" alt="" width="32" height="32" loading="lazy" /></span><span class="bento-integration-name">Cloudflare</span></div>
+                  <div class="bento-integration"><span class="bento-integration-icon"><img src="/pumpy/assets/aws.svg" alt="" width="32" height="32" loading="lazy" /></span><span class="bento-integration-name">AWS S3</span></div>
+                  <div class="bento-integration"><span class="bento-integration-icon"><img src="/pumpy/assets/github.svg" alt="" width="32" height="32" loading="lazy" /></span><span class="bento-integration-name">GitHub CI</span></div>
+                </div>
+              </article>
+            </div>
+
+            <div class="nutrition-widget-shell bento-dock" data-bento-beat="3">
+              <article class="nutrition-widget nutrition-widget-dock" aria-label="SDK nativo e CLI no fluxo de release">
+                <div class="bento-dock-crop"><div class="bento-dock-device"><img src="/pumpy/assets/airdrop-phone-dock.svg" alt="Dock com ícones de Airdrop, React Native, Expo e Terminal" width="1000" height="1000" loading="lazy" decoding="async" /></div></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="nutrition-footer" hidden aria-hidden="true">
+            <span>Um comando. Tudo entregue.</span>
+            <button class="nutrition-overview-trigger" type="button">Ver resumo <span aria-hidden="true">→</span></button>
+            <button class="nutrition-dashboard-trigger" type="button"><span class="nutrition-dashboard-label">Ver telemetria</span> <span aria-hidden="true">→</span></button>
+            <button class="nutrition-replay" type="button">Ver de novo <span aria-hidden="true">↺</span></button>
           </div>
         </div>
       </section>
+
+      <span class="story-traveler pumpy-live" data-scroll-actor aria-hidden="true"></span>
     </main>
 
-    <!-- SIGNATURE GIANT PEEKING MASCOT FOOTER (PUMPY STYLE) -->
-    <footer class="pumpy-site-footer" id="contato">
-      <div class="pumpy-footer-character" aria-hidden="true">
-        <svg viewBox="0 0 120 120" width="100%" height="100%" style="overflow: visible; display: block;">
-          <path
-            d="M22 46 C22 20, 98 20, 98 46 C98 52, 91 55, 84 53 C76 51, 68 51, 60 53 C52 51, 44 51, 36 53 C29 55, 22 52, 22 46 Z"
-            fill="var(--pumpy-body)"
-          />
-          <line x1="33" y1="50" x2="42" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
-          <line x1="87" y1="50" x2="78" y2="63" stroke="var(--pumpy-body)" stroke-width="4.5" stroke-linecap="round" />
-          <rect x="26" y="56" width="68" height="50" rx="25" fill="var(--pumpy-body)" />
-          <g id="footer-mascot-eyes">
-            <ellipse cx="47" cy="76" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
-            <ellipse cx="73" cy="76" rx="4.8" ry="6.2" fill="var(--pumpy-eyes)" />
-          </g>
-        </svg>
-      </div>
-
-      <div class="pumpy-footer-messages" aria-hidden="true">
-        <p class="pumpy-footer-bubble">
-          Vai esperar 48h pela<br />revisão da loja, né?
-        </p>
-        <p class="pumpy-footer-bubble pumpy-footer-bubble-followup">
-          …né? 😠
-        </p>
-      </div>
-
-      <div class="pumpy-footer-content">
-        <a class="pumpy-footer-wordmark" href="#">
-          Airdrop<span>®</span>
-        </a>
-        <p style="color: var(--muted); font-size: 17px; line-height: 1.5; margin: 18px 0 34px; max-width: 440px;">
-          Uma nova forma de publicar no React Native.<br />
-          Receba seu token ou faça deploy na sua conta AWS + Cloudflare.
-        </p>
-
-        <div style="max-width: 480px; margin-bottom: 44px;">
-          <form class="pumpy-beta-form" data-waitlist-form style="padding: 0; margin: 0;" aria-label="Lista de acesso Airdrop">
-            <label class="pumpy-beta-label" for="footer-email">
-              <span>Entre na lista de acesso</span>
-            </label>
-            <div class="pumpy-beta-row">
-              <input
-                id="footer-email"
-                name="email"
-                type="email"
-                autocomplete="email"
-                placeholder="Seu melhor e-mail"
-                maxlength="254"
-                required
-              />
-              <button class="pumpy-button" type="submit">
-                Quero participar <span aria-hidden="true">↗</span>
-              </button>
-            </div>
-            <div style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);" aria-hidden="true">
-              <input name="company" type="text" tabindex="-1" autocomplete="off" />
-            </div>
-            <p class="waitlist-status" style="font-size: 12px; margin-top: 10px; color: var(--mint); display: none;"></p>
-          </form>
+    <footer class="site-footer" id="contato">
+      <div class="footer-stage">
+        <div class="footer-character" aria-hidden="true"><span class="pumpy-live footer-pumpy" data-scroll-actor></span></div>
+        <div class="footer-messages">
+          <p class="footer-bubble">Vai esperar o review<br />da loja mesmo?</p>
+          <p class="footer-bubble footer-bubble-followup">…sério?</p>
         </div>
-
-        <div style="display: flex; flex-wrap: wrap; gap: 18px 28px; font-size: 13px; color: var(--muted-strong);">
-          <a href="/dashboard/" style="color: inherit; text-decoration: none;">Release Console</a>
-          <a href="/docs/getting-started/" style="color: inherit; text-decoration: none;">Getting Started</a>
-          <a href="/docs/security/" style="color: inherit; text-decoration: none;">Segurança ECDSA</a>
-          <a href="/docs/cli/" style="color: inherit; text-decoration: none;">Referência CLI</a>
-          <a href={GITHUB} style="color: inherit; text-decoration: none;">GitHub (MIT)</a>
-          <a href="/privacy/" style="color: inherit; text-decoration: none;">Privacidade</a>
-          <a href="/terms/" style="color: inherit; text-decoration: none;">Termos</a>
+        <div class="footer-content">
+          <a class="footer-wordmark" href="/">Airdrop<span>®</span></a>
+          <p>Updates Over-the-Air em código aberto (MIT).<br />Receba seu token ou suba direto na sua AWS.</p>
+          <div class="footer-connect">
+            <form method="post" action={`${API}/v1/waitlist`} class="beta-form" data-beta-form data-api={API} aria-label="Lista de acesso do Airdrop">
+              <label class="beta-label" for="footer-email">Receba seu token de acesso</label>
+              <div class="beta-input-row">
+                <input id="footer-email" name="email" type="email" autocomplete="email" placeholder="Seu melhor e-mail" maxlength="254" required />
+                <button class="button" type="submit">Quero começar <span aria-hidden="true">↗</span></button>
+              </div>
+              <div class="beta-trap" aria-hidden="true"><label>Website<input name="company" type="text" tabindex="-1" autocomplete="off" /></label></div>
+              <p class="beta-status" role="status" aria-live="polite"></p>
+              <noscript>Ative o JavaScript para enviar sua inscrição com segurança.</noscript>
+            </form>
+            <ul class="footer-socials" style="margin-top: 28px;">
+              <li><a class="footer-social" href="/dashboard/">Console Web ↗</a></li>
+              <li><a class="footer-social" href="/docs/getting-started/">Documentação</a></li>
+              <li><a class="footer-social" href="/docs/security/">Criptografia</a></li>
+              <li><a class="footer-social" href={GITHUB}>GitHub</a></li>
+              <li><a class="footer-social" href="/terms/">Termos</a></li>
+              <li><a class="footer-social" href="/privacy/">Privacidade</a></li>
+            </ul>
+          </div>
         </div>
-        <p style="font-size: 11px; color: var(--muted); margin-top: 18px; font-family: monospace;">
-          airdrop.guhcostan.dev · airdrop-api.guhcostan.dev · AWS us-east-2 + Cloudflare Edge
-        </p>
       </div>
     </footer>
 
-    <!-- PUMPY TOAST NOTIFICATION -->
-    <div
-      id="pumpy-toast"
-      role="status"
-      aria-live="polite"
-      hidden
-      style="
-        position: fixed;
-        z-index: 100;
-        bottom: 28px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 14px 20px;
-        border: 1px solid #43996d;
-        border-radius: 18px;
-        background: #153f2b;
-        color: #d9ffe7;
-        box-shadow: 0 8px 32px #0004;
-        font-size: 14px;
-      "
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#91e8b3" stroke-width="2">
+    <div class="beta-toast" role="status" aria-live="polite" aria-atomic="true" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <circle cx="12" cy="12" r="9" />
         <path d="m8 12 3 3 5-6" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
-      <span id="pumpy-toast-text">Você entrou para a lista!</span>
+      <span>Você entrou para a lista!</span>
     </div>
-
-    <script is:inline define:vars={{ API }}>
-      // 1. Capsule Scroll Navigation
-      const header = document.getElementById("site-header");
-      const syncScroll = () => {
-        if (!header) return;
-        header.classList.toggle("is-scrolled", window.scrollY > 28);
-      };
-      window.addEventListener("scroll", syncScroll, { passive: true });
-      syncScroll();
-
-      // 2. Theme Toggle (Dark <-> Light, Pumpy palette)
-      const themeBtn = document.getElementById("theme-toggle");
-      themeBtn?.addEventListener("click", () => {
-        const html = document.documentElement;
-        const next = html.getAttribute("data-theme") === "light" ? "dark" : "light";
-        html.setAttribute("data-theme", next);
-        html.classList.toggle("dark", next === "dark");
-      });
-
-      // 3. Living Hero & Footer Mascot Eye Tracking + Click Hop/Wink
-      const heroMascotBtn = document.getElementById("hero-mascot-btn");
-      const heroEyes = document.getElementById("hero-mascot-eyes");
-      const footerEyes = document.getElementById("footer-mascot-eyes");
-      const leftEye = document.getElementById("hero-eye-left");
-
-      window.addEventListener(
-        "mousemove",
-        (e) => {
-          const gx = Math.max(-5.5, Math.min(5.5, ((e.clientX / window.innerWidth) - 0.5) * 12));
-          const gy = Math.max(-4, Math.min(4, ((e.clientY / window.innerHeight) - 0.5) * 9));
-          if (heroEyes) heroEyes.setAttribute("transform", `translate(${gx.toFixed(2)}, ${gy.toFixed(2)})`);
-          if (footerEyes) footerEyes.setAttribute("transform", `translate(${(gx * 0.8).toFixed(2)}, ${(gy * 0.8).toFixed(2)})`);
-        },
-        { passive: true }
-      );
-
-      heroMascotBtn?.addEventListener("click", () => {
-        heroMascotBtn.classList.remove("is-hopping");
-        void heroMascotBtn.offsetWidth;
-        heroMascotBtn.classList.add("is-hopping");
-        if (leftEye) {
-          leftEye.setAttribute("ry", "1.2");
-          setTimeout(() => leftEye.setAttribute("ry", "6.2"), 420);
-        }
-      });
-
-      // Periodic natural blink
-      setInterval(() => {
-        if (!leftEye) return;
-        const rightEye = document.getElementById("hero-eye-right");
-        leftEye.setAttribute("ry", "0.8");
-        rightEye?.setAttribute("ry", "0.8");
-        setTimeout(() => {
-          leftEye.setAttribute("ry", "6.2");
-          rightEye?.setAttribute("ry", "6.2");
-        }, 140);
-      }, 4600);
-
-      // 4. Copy CLI command in Hero
-      const copyHeroCli = document.getElementById("copy-hero-cli");
-      const copyHeroBadge = document.getElementById("copy-hero-cli-badge");
-      copyHeroCli?.addEventListener("click", () => {
-        navigator.clipboard?.writeText("npx react-native-airdrop-cli release --platform ios --rollout 20 --sign");
-        if (copyHeroBadge) {
-          copyHeroBadge.textContent = "✓ copiado!";
-          copyHeroBadge.style.color = "var(--mint)";
-          setTimeout(() => {
-            copyHeroBadge.textContent = "copiar";
-            copyHeroBadge.style.color = "var(--muted)";
-          }, 1800);
-        }
-      });
-
-      // 5. Waitlist Form Submission -> POST /v1/waitlist + Pumpy Toast
-      const toast = document.getElementById("pumpy-toast");
-      document.querySelectorAll("[data-waitlist-form]").forEach((form) => {
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const f = e.currentTarget;
-          const fd = new FormData(f);
-          const email = String(fd.get("email") || "").trim();
-          const company = String(fd.get("company") || "");
-          const btn = f.querySelector("button[type='submit']");
-          const status = f.querySelector(".waitlist-status");
-          if (btn) btn.disabled = true;
-          try {
-            const res = await fetch(`${API}/v1/waitlist`, {
-              method: "POST",
-              headers: { "content-type": "application/json" },
-              body: JSON.stringify({ email, company }),
-            });
-            if (!res.ok && res.status !== 202) throw new Error("Falha ao enviar");
-            f.reset();
-            if (status) {
-              status.style.display = "block";
-              status.textContent = "✓ Você entrou para a lista! Enviaremos seu token em breve.";
-            }
-            if (toast) {
-              toast.hidden = false;
-              setTimeout(() => {
-                toast.hidden = true;
-              }, 4000);
-            }
-          } catch {
-            if (status) {
-              status.style.display = "block";
-              status.textContent = "Recebido! Você também pode testar o Console Interativo agora em /dashboard.";
-            }
-          } finally {
-            if (btn) btn.disabled = false;
-          }
-        });
-      });
-    </script>
   </body>
 </html>
