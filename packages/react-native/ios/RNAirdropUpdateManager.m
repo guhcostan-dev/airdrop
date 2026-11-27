@@ -313,9 +313,9 @@ static NSString *Sha256OfFile(NSString *path) {
       if (error) *error = AirdropError(@"ERR_INVALID_MANIFEST", @"invalid file entry");
       return NO;
     }
-    NSString *path = [f[@"path"] precomposedStringWithCanonicalMapping].lowercaseString;
-    if ([path isEqualToString:kManifestFile] || [paths containsObject:path]) {
-      if (error) *error = AirdropError(@"ERR_INVALID_MANIFEST", @"duplicate or reserved file path");
+    NSString *path = [f[@"path"] precomposedStringWithCanonicalMapping];
+    if ([paths containsObject:path]) {
+      if (error) *error = AirdropError(@"ERR_INVALID_MANIFEST", @"duplicate file path");
       return NO;
     }
     [paths addObject:path];
@@ -360,7 +360,9 @@ static NSString *Sha256OfFile(NSString *path) {
     [manifestText appendFormat:@"%@\t%@\n", file[@"path"], file[@"hash"]];
   }
   NSString *manifestPath = [_staging stringByAppendingPathComponent:kManifestFile];
-  if (![manifestText writeToFile:manifestPath atomically:YES encoding:NSUTF8StringEncoding error:nil]) {
+  // Detect an existing asset that aliases the manifest on a case-insensitive volume.
+  if ([fm fileExistsAtPath:manifestPath] ||
+      ![manifestText writeToFile:manifestPath atomically:YES encoding:NSUTF8StringEncoding error:nil]) {
     [fm removeItemAtPath:_staging error:nil];
     if (error) *error = AirdropError(@"ERR_IO", @"cannot write manifest");
     return NO;
