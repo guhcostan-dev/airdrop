@@ -1,0 +1,59 @@
+{
+  "name": "react-native-airdrop",
+  "version": "0.3.0",
+  "description": "Over-the-air updates for React Native (bare and Expo): signed releases, staged rollouts, automatic rollback.",
+  "license": "MIT",
+  "author": "guhcostan",
+  "homepage": "https://github.com/guhcostan-dev/airdrop/tree/main/packages/react-native#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/guhcostan-dev/airdrop.git",
+    "directory": "packages/react-native"
+  },
+  "keywords": [
+    "react-native",
+    "ota",
+    "codepush",
+    "updates",
+    "hot-update",
+    "expo",
+    "code-push",
+    "expo-updates-alternative",
+    "cloudflare"
+  ],
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "react-native": "src/index.ts",
+  "source": "src/index.ts",
+  "files": [
+    "src",
+    "lib",
+    "android/build.gradle",
+    "android/src/main",
+    "ios",
+    "ReactNativeAirdrop.podspec",
+    "react-native.config.js",
+    "app.plugin.js",
+    "plugin"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "tsc -p tsconfig.build.json"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": ">=0.71.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "react": "19.2.3",
+    "react-native": "0.87.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  },
+  "bugs": {
+    "url": "https://github.com/guhcostan-dev/airdrop/issues"
+  }
+}
