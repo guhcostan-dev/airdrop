@@ -5,12 +5,15 @@
 NSString *const RNAirdropErrorDomain = @"RNAirdrop";
 static NSString *const kEmbedded = @"embedded";
 static NSString *const kManifestFile = @"airdrop-manifest.txt";
+static const NSUInteger kMaxAssetDownloads = 6;
 static NSString *const kLaunchFile = @"main.jsbundle";
 
 @implementation RNAirdropUpdateManager {
   NSString *_baseDir;
   NSString *_updatesDir;
   NSString *_statePath;
+  NSString *_staging;
+  NSObject *_downloadLock;
   NSString *_binaryVersion;
   NSString *_publicKey;
   NSMutableDictionary<NSString *, id> *_state;
@@ -31,6 +34,8 @@ static NSString *const kLaunchFile = @"main.jsbundle";
     NSString *support = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES).firstObject;
     _baseDir = [support stringByAppendingPathComponent:@"airdrop"];
     _updatesDir = [_baseDir stringByAppendingPathComponent:@"updates"];
+    _staging = [_baseDir stringByAppendingPathComponent:@"staging"];
+    _downloadLock = [NSObject new];
     _statePath = [_baseDir stringByAppendingPathComponent:@"state.plist"];
     _binaryVersion = [RNAirdropUpdateManager binaryVersion];
     _publicKey = [RNAirdropUpdateManager infoString:@"AirdropPublicKey"];
@@ -47,6 +52,7 @@ static NSString *const kLaunchFile = @"main.jsbundle";
       if (deviceId) _state[@"deviceId"] = deviceId;
       _state[@"binaryVersion"] = _binaryVersion;
       [[NSFileManager defaultManager] removeItemAtPath:_updatesDir error:nil];
+      [[NSFileManager defaultManager] removeItemAtPath:_staging error:nil];
       [self saveState];
     }
   }
@@ -223,15 +229,22 @@ static NSString *HexString(const unsigned char *bytes, size_t len) {
   return out;
 }
 
-static NSString *Sha256OfData(NSData *data) {
-  unsigned char digest[CC_SHA256_DIGEST_LENGTH];
-  CC_SHA256(data.bytes, (CC_LONG)data.length, digest);
-  return HexString(digest, CC_SHA256_DIGEST_LENGTH);
-}
-
 static NSString *Sha256OfFile(NSString *path) {
-  NSData *data = [NSData dataWithContentsOfFile:path options:NSDataReadingMappedIfSafe error:nil];
-  return data ? Sha256OfData(data) : @"";
+  NSInputStream *stream = [NSInputStream inputStreamWithFileAtPath:path];
+  if (!stream) return nil;
+  [stream open];
+  CC_SHA256_CTX context;
+  CC_SHA256_Init(&context);
+  uint8_t buffer[64 * 1024];
+  NSInteger count;
+  while ((count = [stream read:buffer maxLength:sizeof(buffer)]) > 0) {
+    CC_SHA256_Update(&context, buffer, (CC_LONG)count);
+  }
+  [stream close];
+  if (count < 0) return nil;
+  unsigned char digest[CC_SHA256_DIGEST_LENGTH];
+  CC_SHA256_Final(digest, &context);
+  return HexString(digest, sizeof(digest));
 }
 
 /** Mirrors signingMessage() in packages/core/src/signing.ts. */
@@ -293,17 +306,30 @@ static NSString *Sha256OfFile(NSString *path) {
   }
   NSMutableArray *all = [m[@"assets"] mutableCopy];
   [all addObject:launch];
+  NSMutableSet<NSString *> *paths = [NSMutableSet new];
   for (NSDictionary *f in all) {
     if (![f isKindOfClass:[NSDictionary class]] || !IsSafePath(f[@"path"]) || !IsHash(f[@"hash"]) ||
         ![f[@"url"] isKindOfClass:[NSString class]] || ![NSURL URLWithString:f[@"url"]]) {
       if (error) *error = AirdropError(@"ERR_INVALID_MANIFEST", @"invalid file entry");
       return NO;
     }
+    NSString *path = [f[@"path"] precomposedStringWithCanonicalMapping].lowercaseString;
+    if ([path isEqualToString:kManifestFile] || [paths containsObject:path]) {
+      if (error) *error = AirdropError(@"ERR_INVALID_MANIFEST", @"duplicate or reserved file path");
+      return NO;
+    }
+    [paths addObject:path];
   }
   return YES;
 }
 
 - (BOOL)downloadUpdate:(NSDictionary *)m error:(NSError **)error {
+  @synchronized(_downloadLock) {
+    return [self stageUpdate:m error:error];
+  }
+}
+
+- (BOOL)stageUpdate:(NSDictionary *)m error:(NSError **)error {
   if (![self validate:m error:error]) return NO;
   NSString *updateId = m[@"id"];
   @synchronized(self) {
@@ -317,38 +343,38 @@ static NSString *Sha256OfFile(NSString *path) {
   if (_publicKey && ![self verifySignature:m error:error]) return NO;
 
   NSFileManager *fm = [NSFileManager defaultManager];
-  NSString *staging = [_updatesDir stringByAppendingPathComponent:[updateId stringByAppendingString:@".tmp"]];
-  [fm removeItemAtPath:staging error:nil];
-  [fm createDirectoryAtPath:staging withIntermediateDirectories:YES attributes:nil error:nil];
+  [fm removeItemAtPath:_staging error:nil];
+  if (![fm createDirectoryAtPath:_staging withIntermediateDirectories:YES attributes:nil error:nil]) {
+    if (error) *error = AirdropError(@"ERR_IO", @"cannot create staging directory");
+    return NO;
+  }
 
-  NSDictionary<NSString *, NSString *> *reusable = [self reusableFiles];
   NSMutableArray<NSDictionary *> *files = [NSMutableArray arrayWithObject:m[@"launchAsset"]];
   [files addObjectsFromArray:m[@"assets"]];
-  NSMutableString *manifestText = [NSMutableString new];
-
-  for (NSDictionary *f in files) {
-    NSString *target = [staging stringByAppendingPathComponent:f[@"path"]];
-    [fm createDirectoryAtPath:[target stringByDeletingLastPathComponent] withIntermediateDirectories:YES attributes:nil error:nil];
-    NSString *existing = reusable[f[@"hash"]];
-    if (existing && [Sha256OfFile(existing) isEqualToString:f[@"hash"]] && [fm copyItemAtPath:existing toPath:target error:nil]) {
-      // Reused an unchanged file from the running update.
-    } else if (![self downloadFile:f to:target error:error]) {
-      [fm removeItemAtPath:staging error:nil];
-      return NO;
-    }
-    [manifestText appendFormat:@"%@\t%@\n", f[@"path"], f[@"hash"]];
+  if (![self stageFiles:files reusable:[self reusableFiles] error:error]) {
+    [fm removeItemAtPath:_staging error:nil];
+    return NO;
   }
-  [manifestText writeToFile:[staging stringByAppendingPathComponent:kManifestFile] atomically:YES encoding:NSUTF8StringEncoding error:nil];
-
-  NSString *finalDir = [_updatesDir stringByAppendingPathComponent:updateId];
-  [fm removeItemAtPath:finalDir error:nil];
-  if (![fm moveItemAtPath:staging toPath:finalDir error:nil]) {
-    [fm removeItemAtPath:staging error:nil];
-    if (error) *error = AirdropError(@"ERR_IO", @"cannot move staged update");
+  NSMutableString *manifestText = [NSMutableString new];
+  for (NSDictionary *file in files) {
+    [manifestText appendFormat:@"%@\t%@\n", file[@"path"], file[@"hash"]];
+  }
+  NSString *manifestPath = [_staging stringByAppendingPathComponent:kManifestFile];
+  if (![manifestText writeToFile:manifestPath atomically:YES encoding:NSUTF8StringEncoding error:nil]) {
+    [fm removeItemAtPath:_staging error:nil];
+    if (error) *error = AirdropError(@"ERR_IO", @"cannot write manifest");
     return NO;
   }
 
   @synchronized(self) {
+    NSString *finalDir = [_updatesDir stringByAppendingPathComponent:updateId];
+    [fm removeItemAtPath:finalDir error:nil];
+    if (![fm createDirectoryAtPath:_updatesDir withIntermediateDirectories:YES attributes:nil error:nil] ||
+        ![fm moveItemAtPath:_staging toPath:finalDir error:nil]) {
+      [fm removeItemAtPath:_staging error:nil];
+      if (error) *error = AirdropError(@"ERR_IO", @"cannot move staged update");
+      return NO;
+    }
     NSString *previousPending = _state[@"pending"];
     _state[@"pending"] = updateId;
     [_state removeObjectForKey:@"pendingLaunched"];
@@ -360,46 +386,111 @@ static NSString *Sha256OfFile(NSString *path) {
   return YES;
 }
 
-- (BOOL)downloadFile:(NSDictionary *)f to:(NSString *)target error:(NSError **)error {
+- (BOOL)stageFiles:(NSArray<NSDictionary *> *)files
+          reusable:(NSDictionary<NSString *, NSString *> *)reusable
+             error:(NSError **)error {
   NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
   config.timeoutIntervalForRequest = 30;
+  config.HTTPMaximumConnectionsPerHost = kMaxAssetDownloads;
   NSURLSession *session = [NSURLSession sessionWithConfiguration:config];
+  NSObject *workLock = [NSObject new];
+  __block NSUInteger next = 0;
+  __block NSError *failure = nil;
+  dispatch_apply(MIN(kMaxAssetDownloads, files.count), dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^(size_t worker) {
+    NSFileManager *fm = [NSFileManager defaultManager];
+    while (YES) {
+      @autoreleasepool {
+        NSDictionary *file;
+        @synchronized(workLock) {
+          if (failure || next == files.count) return;
+          file = files[next++];
+        }
+        NSString *target = [self->_staging stringByAppendingPathComponent:file[@"path"]];
+        NSError *fileError = nil;
+        if (![fm createDirectoryAtPath:[target stringByDeletingLastPathComponent]
+           withIntermediateDirectories:YES attributes:nil error:nil]) {
+          fileError = AirdropError(@"ERR_IO", @"cannot create asset directory");
+        } else {
+          NSString *existing = reusable[file[@"hash"]];
+          BOOL copied = existing && [Sha256OfFile(existing) isEqualToString:file[@"hash"]] &&
+                        [fm copyItemAtPath:existing toPath:target error:nil];
+          if (!copied) [self downloadFile:file session:session to:target error:&fileError];
+        }
+        if (fileError) {
+          @synchronized(workLock) {
+            if (!failure) failure = fileError;
+          }
+          return;
+        }
+      }
+    }
+  });
+  [session finishTasksAndInvalidate];
+  if (error && failure) *error = failure;
+  return failure == nil;
+}
+
+static BOOL IsRetryableNetworkError(NSError *error) {
+  if (![error.domain isEqualToString:NSURLErrorDomain]) return NO;
+  switch (error.code) {
+    case NSURLErrorTimedOut:
+    case NSURLErrorCannotFindHost:
+    case NSURLErrorCannotConnectToHost:
+    case NSURLErrorNetworkConnectionLost:
+    case NSURLErrorDNSLookupFailed:
+    case NSURLErrorNotConnectedToInternet:
+      return YES;
+    default:
+      return NO;
+  }
+}
+
+- (BOOL)downloadFile:(NSDictionary *)f session:(NSURLSession *)session to:(NSString *)target error:(NSError **)error {
   NSString *lastError = @"download failed";
   for (int attempt = 0; attempt < 3; attempt++) {
-    __block NSData *body = nil;
     __block NSInteger status = 0;
     __block NSError *netError = nil;
+    __block NSError *fileError = nil;
     dispatch_semaphore_t done = dispatch_semaphore_create(0);
-    // NSURLSession negotiates gzip and decodes Content-Encoding transparently.
-    [[session dataTaskWithURL:[NSURL URLWithString:f[@"url"]]
-            completionHandler:^(NSData *data, NSURLResponse *response, NSError *err) {
-              body = data;
-              netError = err;
-              status = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse *)response).statusCode : 0;
-              dispatch_semaphore_signal(done);
-            }] resume];
+    // NSURLSession decodes gzip and keeps the body on disk.
+    [[session downloadTaskWithURL:[NSURL URLWithString:f[@"url"]]
+                completionHandler:^(NSURL *location, NSURLResponse *response, NSError *err) {
+                  netError = err;
+                  status = [response isKindOfClass:[NSHTTPURLResponse class]] ? ((NSHTTPURLResponse *)response).statusCode : 0;
+                  if (!err && status == 200 && location) {
+                    NSFileManager *fm = [NSFileManager defaultManager];
+                    // The temporary file expires when this completion handler returns.
+                    if (![fm moveItemAtURL:location toURL:[NSURL fileURLWithPath:target] error:&fileError]) {
+                      fileError = AirdropError(@"ERR_IO", fileError.localizedDescription ?: @"cannot write file");
+                    }
+                  }
+                  dispatch_semaphore_signal(done);
+                }] resume];
     dispatch_semaphore_wait(done, DISPATCH_TIME_FOREVER);
-    if (netError || status >= 500) {
+    if (fileError) {
+      if (error) *error = fileError;
+      return NO;
+    }
+    if ((status >= 500 && status < 600) || ((status == 0 || status == 200) && IsRetryableNetworkError(netError))) {
       lastError = netError.localizedDescription ?: [NSString stringWithFormat:@"HTTP %ld", (long)status];
       continue;
     }
-    if (status != 200 || !body) {
-      lastError = [NSString stringWithFormat:@"HTTP %ld for %@", (long)status, f[@"path"]];
+    if (netError || status != 200) {
+      lastError = netError.localizedDescription ?: [NSString stringWithFormat:@"HTTP %ld for %@", (long)status, f[@"path"]];
       break;
     }
-    if (![Sha256OfData(body) isEqualToString:f[@"hash"]]) {
-      [session finishTasksAndInvalidate];
-      if (error) *error = AirdropError(@"ERR_HASH_MISMATCH", [NSString stringWithFormat:@"hash mismatch for %@", f[@"path"]]);
+    NSNumber *size = [[NSFileManager defaultManager] attributesOfItemAtPath:target error:nil][NSFileSize];
+    if (!size) {
+      if (error) *error = AirdropError(@"ERR_IO", @"cannot read downloaded file");
       return NO;
     }
-    [session finishTasksAndInvalidate];
-    if (![body writeToFile:target atomically:YES]) {
-      if (error) *error = AirdropError(@"ERR_IO", @"cannot write file");
+    if (([f[@"size"] isKindOfClass:[NSNumber class]] && [size compare:f[@"size"]] == NSOrderedDescending) ||
+        ![Sha256OfFile(target) isEqualToString:f[@"hash"]]) {
+      if (error) *error = AirdropError(@"ERR_HASH_MISMATCH", [NSString stringWithFormat:@"hash mismatch for %@", f[@"path"]]);
       return NO;
     }
     return YES;
   }
-  [session finishTasksAndInvalidate];
   if (error) *error = AirdropError(@"ERR_DOWNLOAD", lastError);
   return NO;
 }

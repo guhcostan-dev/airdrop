@@ -22,11 +22,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipException;
 
 /**
  * Platform-independent update logic (plain Java, no Android APIs) so it can be
@@ -48,6 +57,7 @@ import java.util.UUID;
 public class UpdateManager {
   public static final String EMBEDDED = "embedded";
   private static final String MANIFEST_FILE = "airdrop-manifest.txt";
+  private static final int MAX_ASSET_DOWNLOADS = 6;
   /** DER prefix turning a raw uncompressed P-256 point into a SubjectPublicKeyInfo. */
   private static final byte[] P256_SPKI_PREFIX = hexToBytes("3059301306072a8648ce3d020106082a8648ce3d030107034200");
 
@@ -95,6 +105,8 @@ public class UpdateManager {
   private final File baseDir;
   private final File updatesDir;
   private final File stateFile;
+  private final File staging;
+  private final Object downloadLock = new Object();
   private final String binaryVersion;
   private final String launchFileName;
   private final String publicKey;
@@ -108,6 +120,7 @@ public class UpdateManager {
   public UpdateManager(File baseDir, String binaryVersion, String launchFileName, String publicKey) {
     this.baseDir = baseDir;
     this.updatesDir = new File(baseDir, "updates");
+    this.staging = new File(baseDir, "staging");
     this.stateFile = new File(baseDir, "state.properties");
     this.binaryVersion = binaryVersion;
     this.launchFileName = launchFileName;
@@ -121,6 +134,7 @@ public class UpdateManager {
       if (deviceId != null) state.setProperty("deviceId", deviceId);
       state.setProperty("binaryVersion", binaryVersion);
       deleteRecursively(updatesDir);
+      deleteRecursively(staging);
       saveState();
     }
   }
@@ -254,6 +268,12 @@ public class UpdateManager {
 
   /** Downloads, verifies and stages an update. Blocking; call off the main thread. */
   public void download(Update update, ProgressListener progress) throws UpdateException {
+    synchronized (downloadLock) {
+      stageUpdate(update, progress);
+    }
+  }
+
+  private void stageUpdate(Update update, ProgressListener progress) throws UpdateException {
     validate(update);
     synchronized (this) {
       if (getList("failed").contains(update.id))
@@ -267,51 +287,88 @@ public class UpdateManager {
     List<FileEntry> files = new ArrayList<>();
     files.add(update.launchAsset);
     files.addAll(update.assets);
-    long total = 0;
-    for (FileEntry f : files) total += f.size;
-
     Map<String, File> reusable = reusableFiles();
-    File staging = new File(updatesDir, update.id + ".tmp");
     deleteRecursively(staging);
     if (!staging.mkdirs()) throw new UpdateException("ERR_IO", "cannot create " + staging);
 
-    long received = 0;
     try {
-      for (FileEntry f : files) {
-        File target = safeChild(staging, f.path);
-        File parent = target.getParentFile();
-        if (parent != null && !parent.isDirectory() && !parent.mkdirs())
-          throw new UpdateException("ERR_IO", "cannot create " + parent);
-        File existing = reusable.get(f.hash);
-        if (existing != null && existing.isFile() && f.hash.equals(sha256(existing))) {
-          copy(existing, target);
-        } else {
-          downloadFile(f, target);
-        }
-        received += f.size;
-        if (progress != null) progress.onProgress(received, total);
-      }
+      stageFiles(files, reusable, progress);
       writeManifest(staging, files);
-      // The launch asset must be at the conventional name so RN resolves assets next to it.
-      File finalDir = new File(updatesDir, update.id);
-      deleteRecursively(finalDir);
-      if (!staging.renameTo(finalDir)) throw new UpdateException("ERR_IO", "cannot move staged update");
-    } catch (UpdateException e) {
-      deleteRecursively(staging);
-      throw e;
-    } catch (IOException e) {
-      deleteRecursively(staging);
-      throw new UpdateException("ERR_DOWNLOAD", e.getMessage(), e);
-    }
 
-    synchronized (this) {
-      String previousPending = state.getProperty("pending");
-      state.setProperty("pending", update.id);
-      state.remove("pendingLaunched");
-      saveState();
-      if (previousPending != null && !EMBEDDED.equals(previousPending) && !previousPending.equals(launchedUpdateId))
-        deleteRecursively(new File(updatesDir, previousPending));
+      synchronized (this) {
+        File finalDir = new File(updatesDir, update.id);
+        if (!updatesDir.isDirectory() && !updatesDir.mkdirs())
+          throw new UpdateException("ERR_IO", "cannot create " + updatesDir);
+        deleteRecursively(finalDir);
+        if (!staging.renameTo(finalDir)) throw new UpdateException("ERR_IO", "cannot move staged update");
+
+        String previousPending = state.getProperty("pending");
+        state.setProperty("pending", update.id);
+        state.remove("pendingLaunched");
+        saveState();
+        if (previousPending != null && !EMBEDDED.equals(previousPending) && !previousPending.equals(launchedUpdateId))
+          deleteRecursively(new File(updatesDir, previousPending));
+      }
+    } catch (IOException e) {
+      throw new UpdateException("ERR_DOWNLOAD", e.getMessage(), e);
+    } finally {
+      deleteRecursively(staging);
     }
+  }
+
+  private void stageFiles(List<FileEntry> files, Map<String, File> reusable, ProgressListener progress)
+      throws IOException, UpdateException {
+    int workers = Math.min(MAX_ASSET_DOWNLOADS, files.size());
+    ExecutorService executor = Executors.newFixedThreadPool(workers);
+    ExecutorCompletionService<FileEntry> completed = new ExecutorCompletionService<>(executor);
+    long total = 0;
+    for (FileEntry file : files) total += file.size;
+    long received = 0;
+    int next = 0;
+    boolean interrupted = false;
+    try {
+      for (; next < workers; next++) submitFile(completed, files.get(next), reusable);
+      for (int remaining = files.size(); remaining > 0; remaining--) {
+        received += completed.take().get().size;
+        if (progress != null) progress.onProgress(received, total);
+        if (next < files.size()) submitFile(completed, files.get(next++), reusable);
+      }
+    } catch (InterruptedException e) {
+      interrupted = true;
+      throw new UpdateException("ERR_DOWNLOAD", "download interrupted", e);
+    } catch (ExecutionException e) {
+      Throwable cause = e.getCause();
+      if (cause instanceof UpdateException) throw (UpdateException) cause;
+      if (cause instanceof IOException) throw (IOException) cause;
+      throw new UpdateException("ERR_DOWNLOAD", cause.getMessage(), cause);
+    } finally {
+      executor.shutdownNow();
+      // Background writes must finish before the caller deletes or moves staging.
+      while (!executor.isTerminated()) {
+        try {
+          executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+          interrupted = true;
+        }
+      }
+      if (interrupted) Thread.currentThread().interrupt();
+    }
+  }
+
+  private void submitFile(ExecutorCompletionService<FileEntry> completed, FileEntry file, Map<String, File> reusable) {
+    completed.submit(() -> {
+      File target = safeChild(staging, file.path);
+      File parent = target.getParentFile();
+      if (!parent.isDirectory() && !parent.mkdirs() && !parent.isDirectory())
+        throw new UpdateException("ERR_IO", "cannot create " + parent);
+      File existing = reusable.get(file.hash);
+      if (existing != null && existing.isFile() && file.hash.equals(sha256(existing))) {
+        copy(existing, target);
+      } else {
+        downloadFile(file, target);
+      }
+      return file;
+    });
   }
 
   private void validate(Update u) throws UpdateException {
@@ -323,10 +380,12 @@ public class UpdateManager {
           "ERR_INVALID_MANIFEST", "launch asset must be named " + launchFileName + " (got " + u.launchAsset.path + ")");
     List<FileEntry> all = new ArrayList<>(u.assets);
     all.add(u.launchAsset);
+    Set<String> paths = new HashSet<>();
     for (FileEntry f : all) {
       if (f.hash == null || !f.hash.matches("[0-9a-f]{64}"))
         throw new UpdateException("ERR_INVALID_MANIFEST", "invalid hash for " + f.path);
       if (!isSafePath(f.path)) throw new UpdateException("ERR_INVALID_MANIFEST", "unsafe path " + f.path);
+      if (!paths.add(f.path)) throw new UpdateException("ERR_INVALID_MANIFEST", "duplicate path " + f.path);
       if (f.url == null || !(f.url.startsWith("https://") || f.url.startsWith("http://")))
         throw new UpdateException("ERR_INVALID_MANIFEST", "invalid url for " + f.path);
     }
@@ -388,50 +447,76 @@ public class UpdateManager {
 
   private void downloadFile(FileEntry f, File target) throws IOException, UpdateException {
     IOException last = null;
-    for (int attempt = 0; attempt < 3; attempt++) {
+    for (int attempt = 0; attempt < 3 && !Thread.currentThread().isInterrupted(); attempt++) {
       HttpURLConnection conn = (HttpURLConnection) new URL(f.url).openConnection();
       conn.setConnectTimeout(15000);
       conn.setReadTimeout(30000);
-      // Ask for gzip explicitly and decode it ourselves: Android only decodes
-      // transparently when it set the header itself, other JVMs never do.
+      // Explicit gzip keeps decoding consistent across Android and other JVMs.
       conn.setRequestProperty("Accept-Encoding", "gzip");
+      boolean complete = false;
       try {
         int code = conn.getResponseCode();
         if (code != 200) {
           last = new IOException("HTTP " + code + " for " + f.path);
-          // Retry only server errors (like iOS); a 4xx will not fix itself.
-          if (code >= 500) continue;
+          if (code >= 500 && code < 600) continue;
           break;
         }
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        long written = 0;
-        InputStream raw = conn.getInputStream();
-        if ("gzip".equalsIgnoreCase(conn.getContentEncoding())) raw = new java.util.zip.GZIPInputStream(raw);
-        try (InputStream in = raw; OutputStream out = new FileOutputStream(target)) {
-          byte[] buf = new byte[64 * 1024];
-          int n;
-          while ((n = in.read(buf)) != -1) {
-            written += n;
-            if (written > f.size) throw new UpdateException("ERR_HASH_MISMATCH", f.path + " is larger than declared");
-            digest.update(buf, 0, n);
-            out.write(buf, 0, n);
-          }
-        }
-        String actual = bytesToHex(digest.digest());
-        if (!actual.equals(f.hash)) {
-          target.delete();
-          throw new UpdateException("ERR_HASH_MISMATCH", "hash mismatch for " + f.path);
-        }
+        receiveFile(conn, f, target);
+        complete = true;
         return;
-      } catch (java.security.NoSuchAlgorithmException e) {
-        throw new IOException(e);
+      } catch (ZipException e) {
+        throw new UpdateException("ERR_HASH_MISMATCH", "invalid gzip for " + f.path, e);
       } catch (IOException e) {
         last = e;
       } finally {
-        conn.disconnect();
+        // Closing a consumed response returns the connection to the platform pool.
+        if (!complete) conn.disconnect();
       }
     }
-    throw last != null ? last : new IOException("download failed for " + f.path);
+    throw last != null ? last : new IOException("download interrupted for " + f.path);
+  }
+
+  private void receiveFile(HttpURLConnection conn, FileEntry file, File target) throws IOException, UpdateException {
+    MessageDigest digest;
+    try {
+      digest = MessageDigest.getInstance("SHA-256");
+    } catch (java.security.NoSuchAlgorithmException e) {
+      throw new UpdateException("ERR_HASH_MISMATCH", "SHA-256 unavailable", e);
+    }
+    try (InputStream raw = conn.getInputStream();
+         InputStream in = "gzip".equalsIgnoreCase(conn.getContentEncoding()) ? new GZIPInputStream(raw) : raw) {
+      writeResponse(in, file, target, digest);
+    }
+    if (!bytesToHex(digest.digest()).equals(file.hash))
+      throw new UpdateException("ERR_HASH_MISMATCH", "hash mismatch for " + file.path);
+  }
+
+  private void writeResponse(InputStream in, FileEntry file, File target, MessageDigest digest)
+      throws IOException, UpdateException {
+    IOException readFailure = null;
+    try (FileOutputStream output = new FileOutputStream(target)) {
+      byte[] buffer = new byte[64 * 1024];
+      long written = 0;
+      while (true) {
+        int count;
+        try {
+          if (Thread.currentThread().isInterrupted()) throw new IOException("download interrupted");
+          count = in.read(buffer);
+        } catch (IOException e) {
+          readFailure = e;
+          break;
+        }
+        if (count == -1) break;
+        written += count;
+        if (written > file.size)
+          throw new UpdateException("ERR_HASH_MISMATCH", file.path + " is larger than declared");
+        digest.update(buffer, 0, count);
+        output.write(buffer, 0, count);
+      }
+    } catch (IOException e) {
+      throw new UpdateException("ERR_IO", "cannot write " + file.path, e);
+    }
+    if (readFailure != null) throw readFailure;
   }
 
   /** hash -> file from the updates already on disk, so unchanged files are copied, not downloaded. */

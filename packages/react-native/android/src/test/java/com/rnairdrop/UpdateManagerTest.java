@@ -24,6 +24,10 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPOutputStream;
 import org.junit.After;
@@ -33,6 +37,7 @@ import org.junit.Test;
 public class UpdateManagerTest {
   private static final String BUNDLE = "index.android.bundle";
   private HttpServer server;
+  private ExecutorService serverExecutor;
   private final Map<String, byte[]> files = new HashMap<>();
   private final AtomicInteger requests = new AtomicInteger();
   private File dir;
@@ -42,6 +47,8 @@ public class UpdateManagerTest {
   public void setUp() throws Exception {
     dir = Files.createTempDirectory("airdrop").toFile();
     server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+    serverExecutor = Executors.newCachedThreadPool();
+    server.setExecutor(serverExecutor);
     server.createContext(
         "/",
         ex -> {
@@ -70,6 +77,7 @@ public class UpdateManagerTest {
   @After
   public void tearDown() {
     server.stop(0);
+    serverExecutor.shutdownNow();
     UpdateManager.deleteRecursively(dir);
   }
 
@@ -145,6 +153,49 @@ public class UpdateManagerTest {
     }
     assertEquals(1, requests.get());
     assertNull(m.getPendingUpdateId());
+  }
+
+  @Test
+  public void stagesOnlyAfterConcurrentDownloadsComplete() throws Exception {
+    UpdateManager manager = manager("1");
+    UpdateManager.Update update = update("start");
+    byte[] content = "asset".getBytes(StandardCharsets.UTF_8);
+    String hash = sha256(content);
+    CountDownLatch firstWave = new CountDownLatch(6);
+    AtomicInteger active = new AtomicInteger();
+    AtomicInteger peak = new AtomicInteger();
+    server.createContext("/asset/", exchange -> {
+      int current = active.incrementAndGet();
+      peak.accumulateAndGet(current, Math::max);
+      firstWave.countDown();
+      try {
+        boolean concurrent;
+        try {
+          concurrent = firstWave.await(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        } finally {
+          active.decrementAndGet();
+        }
+        exchange.sendResponseHeaders(concurrent ? 200 : 400, concurrent ? content.length : -1);
+        if (concurrent) exchange.getResponseBody().write(content);
+      } finally {
+        exchange.close();
+      }
+    });
+    for (int index = 0; index < 12; index++) {
+      update.assets.add(new UpdateManager.FileEntry("assets/" + index, hash, content.length, base + "asset/" + index));
+    }
+
+    AtomicInteger progress = new AtomicInteger();
+    manager.download(update, (received, total) -> {
+      assertNull(manager.getPendingUpdateId());
+      assertEquals((long) progress.incrementAndGet() * content.length, received);
+    });
+    assertEquals(6, peak.get());
+    assertEquals(13, progress.get());
+    assertEquals(update.id, manager.getPendingUpdateId());
   }
 
   @Test
