@@ -18,15 +18,25 @@ export interface AppInfo {
   role?: "owner" | "member";
 }
 
+export interface UserInfo {
+  id: string;
+  email: string;
+  createdAt: string;
+  /** Missing on servers older than email verification. */
+  emailVerified?: boolean;
+  /** Unverified accounts lose access to their apps after this date. */
+  verifyBy?: string | null;
+}
+
 export interface SessionInfo {
   token: string;
   expiresAt: string;
-  user: { id: string; email: string; createdAt: string };
+  user: UserInfo;
 }
 
 export interface MeInfo {
   kind: "user" | "token" | "operator";
-  user: { id: string; email: string; createdAt: string } | null;
+  user: UserInfo | null;
   appId: string | null;
 }
 
@@ -75,6 +85,13 @@ export class Api {
   }
   static login(serverUrl: string, email: string, password: string) {
     return new Api(serverUrl).request<SessionInfo>("POST", "/v1/auth/login", { email, password });
+  }
+  /** Emails a reset link if the account exists (the answer is the same either way). */
+  static forgotPassword(serverUrl: string, email: string) {
+    return new Api(serverUrl).request<{ message: string }>("POST", "/v1/auth/password/forgot", { email });
+  }
+  resendVerification() {
+    return this.request<{ alreadyVerified: boolean }>("POST", "/v1/auth/verify/resend");
   }
   logout() {
     return this.request<void>("POST", "/v1/auth/logout");

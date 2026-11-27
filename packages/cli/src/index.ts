@@ -23,6 +23,12 @@ import { c, formatBytes, log, table } from "./ui";
 
 const VERSION = "0.3.0";
 
+/** What happens if the email is never confirmed (server rule, src/verification.ts there). */
+function verifyHint(verifyBy: string | null | undefined): string {
+  const by = verifyBy ? ` by ${verifyBy.slice(0, 10)}` : "";
+  return `Confirm it${by} to keep access to your apps and to create a second free app (\`airdrop resend-verification\` sends a new link).`;
+}
+
 const HELP = `${c.bold("airdrop")} — over-the-air updates for React Native
 
 Usage: airdrop <command> [options]
@@ -32,6 +38,8 @@ Account
   login [--email <email>]                Sign in with email + password (default server: ${DEFAULT_SERVER})
   login --token <token>                  Use an API token instead (CI token or operator token)
   logout                                 Sign out and forget the stored credentials
+  forgot-password [--email <email>]      Email a link to choose a new password
+  resend-verification                    Email a new link to confirm your address
   whoami                                 Show who you are signed in as
 
 Setup
@@ -131,6 +139,7 @@ async function main(argv: string[]) {
       const url = normalizeServerUrl(str(values, "server") ?? process.env.AIRDROP_SERVER ?? DEFAULT_SERVER);
       const token = str(values, "token");
       const cfg = readUserConfig();
+      let verifyBy: string | null | undefined;
       if (token && cmd === "login") {
         await new Api(url, token).listApps(); // validates the token
         cfg.servers[url] = { token };
@@ -143,12 +152,35 @@ async function main(argv: string[]) {
         }
         const session = cmd === "signup" ? await Api.signup(url, email, password) : await Api.login(url, email, password);
         cfg.servers[url] = { token: session.token, email: session.user.email };
+        verifyBy = session.user.verifyBy;
       }
       cfg.defaultServer = url;
       writeUserConfig(cfg);
       const who = cfg.servers[url]!.email ? ` as ${cfg.servers[url]!.email}` : "";
       log.ok(`${cmd === "signup" ? "Account created. Signed in" : "Logged in"} to ${url}${who}`);
-      if (cmd === "signup") log.info(`Next: run ${c.cyan("airdrop init")} in your React Native project.`);
+      if (cmd === "signup") {
+        log.info(`We sent a confirmation link to ${cfg.servers[url]!.email}. ${verifyHint(verifyBy)}`);
+        log.info(`Next: run ${c.cyan("airdrop init")} in your React Native project.`);
+      }
+      return;
+    }
+
+    case "forgot-password": {
+      const { values } = parse(argv.slice(1), { email: { type: "string" } });
+      const url = normalizeServerUrl(str(values, "server") ?? process.env.AIRDROP_SERVER ?? readUserConfig().defaultServer ?? DEFAULT_SERVER);
+      const email = str(values, "email") ?? (await ask("Email: "));
+      if (!email) throw new Error("usage: airdrop forgot-password [--email <email>]");
+      await Api.forgotPassword(url, email);
+      log.ok(`If an account exists for ${email}, a link to choose a new password is on its way (valid for 1 hour).`);
+      return;
+    }
+
+    case "resend-verification": {
+      const { values } = parse(argv.slice(1), {});
+      const conn = resolveConnection({ server: str(values, "server"), token: str(values, "token") });
+      const res = await new Api(conn.serverUrl, conn.token).resendVerification();
+      if (res.alreadyVerified) log.ok("Your email is already confirmed.");
+      else log.ok("A new confirmation link is on its way (at most one per minute).");
       return;
     }
 
@@ -173,7 +205,11 @@ async function main(argv: string[]) {
       const { values } = parse(argv.slice(1), {});
       const conn = resolveConnection({ server: str(values, "server"), token: str(values, "token") });
       const me = await new Api(conn.serverUrl, conn.token).me();
-      if (me.user) log.info(`${me.user.email} on ${conn.serverUrl}`);
+      if (me.user)
+        log.info(
+          `${me.user.email} on ${conn.serverUrl}` +
+            (me.user.emailVerified === false ? ` (email not confirmed: ${verifyHint(me.user.verifyBy)})` : ""),
+        );
       else if (me.appId) log.info(`API token for app ${me.appId} on ${conn.serverUrl}`);
       else log.info(`Operator token on ${conn.serverUrl}`);
       return;
