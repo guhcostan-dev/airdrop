@@ -61,6 +61,8 @@ export interface CheckRequest {
   deviceId: string;
   /** Update currently running, or null/undefined when running the embedded bundle. */
   currentUpdateId?: string | null;
+  /** Up to 50 update IDs that failed to launch on this device. */
+  failedUpdateIds?: string[];
   /** Native SDK version, for diagnostics. */
   sdkVersion?: string;
 }

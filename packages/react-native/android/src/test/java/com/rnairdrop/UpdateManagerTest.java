@@ -168,8 +168,13 @@ public class UpdateManagerTest {
     assertTrue(l4.getFailedUpdateIds().contains(bad.id));
     assertEquals(1, l4.takeUnreportedRollbacks().size());
     assertEquals(0, l4.takeUnreportedRollbacks().size());
+    // The server can roll back the good update while the failed update remains enabled.
+    l4.clearToEmbedded();
+    UpdateManager l5 = manager("1");
+    assertNull(l5.resolveBundlePath());
+    assertEquals(java.util.Collections.singletonList(bad.id), l5.getFailedUpdateIds());
     try {
-      l4.download(bad, null);
+      l5.download(bad, null);
       fail("failed updates must not be reinstalled");
     } catch (UpdateManager.UpdateException e) {
       assertEquals("ERR_UPDATE_FAILED_BEFORE", e.code);

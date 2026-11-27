@@ -71,13 +71,14 @@ export async function checkForUpdate(): Promise<CheckResult> {
       runtimeVersion: c.runtimeVersion,
       deviceId: state.deviceId,
       currentUpdateId: state.currentUpdateId,
+      failedUpdateIds: state.failedUpdateIds,
       sdkVersion: c.sdkVersion,
     },
     config.timeout ?? 10000,
   );
   if (!res.ok) throw new Error(`update check failed: HTTP ${res.status}`);
   const result = (await res.json()) as CheckResult;
-  // Never re-offer something this device already rolled back from. An update that is
+  // Older servers may still offer something this device already rolled back from. An update that is
   // already staged is still reported (sync() then reports it as installed; the native
   // download is a no-op for it).
   if (result.status === "update" && state.failedUpdateIds.includes(result.update.id)) {

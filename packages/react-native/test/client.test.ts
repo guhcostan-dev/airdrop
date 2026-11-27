@@ -97,12 +97,14 @@ describe("sync", () => {
     expect(native.restartApp).toHaveBeenCalledOnce();
   });
 
-  it("ignores updates that previously failed on this device", async () => {
+  it("sends failed update IDs and still rejects them if an older server offers one", async () => {
     const native = makeNative();
-    native.state.failedUpdateIds = ["bad"];
-    mockServer({ status: "update", update: update("bad") });
+    const failed = "00000000-0000-4000-8000-000000000001";
+    native.state.failedUpdateIds = [failed];
+    const calls = mockServer({ status: "update", update: update(failed) });
     const { sync } = await load(native);
     expect((await sync()).status).toBe("upToDate");
+    expect(calls[0]!.body).toMatchObject({ failedUpdateIds: [failed] });
     expect(native.downloadUpdate).not.toHaveBeenCalled();
   });
 
