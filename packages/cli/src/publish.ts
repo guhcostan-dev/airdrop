@@ -45,7 +45,7 @@ export async function publishBundle(opts: PublishOptions): Promise<UpdateInfo> {
   let uploaded = 0;
   await pool(missing, opts.concurrency ?? 6, async (hash) => {
     const file = byHash.get(hash)!;
-    const gz = zlib.gzipSync(fs.readFileSync(path.join(opts.dir, file.path)), { level: 9 });
+    const gz = zlib.gzipSync(fs.readFileSync(path.join(opts.dir, file.path)), { level: 6 });
     await opts.api.uploadAsset(opts.appId, hash, gz);
     uploaded++;
     log.dim(`  ↑ ${file.path} (${formatBytes(file.size)} → ${formatBytes(gz.byteLength)} gz) [${uploaded}/${missing.length}]`);
