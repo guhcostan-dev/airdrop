@@ -73,7 +73,7 @@ import { withAirdrop } from "react-native-airdrop";
 export default withAirdrop(App);
 ```
 
-See [Getting Started](https://airdrop.guhcostan.dev/docs/getting-started/) for Expo plugin setup, key generation, and self-hosting.
+See [Getting Started](https://airdrop.guhcostan.dev/docs/getting-started/) for Expo plugin setup, code signing, and CI publishing.
 
 ## License
 

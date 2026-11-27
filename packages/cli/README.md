@@ -5,7 +5,7 @@ over-the-air updates for React Native.
 
 ```sh
 npm install -g react-native-airdrop-cli
-airdrop login --server https://ota.example.com --token <token>
+airdrop signup              # or: airdrop login
 airdrop init --name "My App" --sign
 airdrop release --platform android --message "Fix checkout" --private-key airdrop-private-key.pem
 airdrop updates list
