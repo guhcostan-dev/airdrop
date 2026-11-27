@@ -20,11 +20,16 @@ Over-the-Air (OTA) JavaScript and asset updates for React Native (`0.71` through
 airdrop release --platform ios --message "Fix checkout button" --rollout 20 --private-key ./airdrop-private-key.pem
 ```
 
-## Architecture
+## How it works
 
-<div align="center">
-  <img src="https://airdrop.guhcostan.dev/brand/architecture.png" alt="Airdrop architecture" width="100%" />
-</div>
+1. **Publish**: `airdrop release` bundles your JavaScript and assets, hashes every file with SHA-256, signs the
+   update with your private key when code signing is on (the key never leaves your machine or CI) and uploads only files the service doesn't have yet.
+2. **Deliver**: on launch the SDK asks for the newest compatible update for its app, platform, runtime version and
+   channel, and downloads only the files that changed.
+3. **Apply**: the device verifies every hash (and the signature, when the app embeds a public key), applies the update on the next start (or right away
+   for mandatory updates), and rolls back automatically if the new bundle crashes before `notifyAppReady()`.
+
+Details: [How it works](https://airdrop.guhcostan.dev/docs/how-it-works/) · [Security](https://airdrop.guhcostan.dev/docs/security/)
 
 ## Packages
 
